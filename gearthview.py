@@ -8,6 +8,13 @@
         begin                : 2013-06-22
         copyright            : (C) 2013 by geodrinx
         email                : geodrinx@gmail.com
+        
+        history              :
+                                 
+          Plugin Creation      Roberto Angeletti
+          
+          menu and icons         Aldo Scorza
+                             
  ***************************************************************************/
 
 /***************************************************************************
@@ -32,6 +39,7 @@ import platform
 from math import *
 import datetime
 import time
+import codecs
 
 
 # Initialize Qt resources from file resources.py
@@ -73,34 +81,81 @@ class gearthview:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
+###modified by Aldo Scorza (start)
     def initGui(self):
         # Create action that will start plugin configuration
-        self.action = QAction(
-            QIcon(":/plugins/gearthview/icon.png"),
-            u"GEarthView", self.iface.mainWindow())
+        self.action = QAction(QIcon(self.plugin_dir + "/iconG.png"),QCoreApplication.translate(u"GEarthView", "GEarthView"), self.iface.mainWindow())
+        QObject.connect(self.action, SIGNAL("triggered()"), self.run)
         # connect the action to the run method
-        QObject.connect(self.action, SIGNAL("activated()"), self.run)
 
+        self.PasteFromGEaction = QAction(QIcon(self.plugin_dir + "/iconP.png"),QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
+        QObject.connect(self.PasteFromGEaction, SIGNAL("triggered()"), self.PasteFromGE)
+
+        self.aboutAction= QAction(QIcon(self.plugin_dir + "/iconA.png"), QCoreApplication.translate(u"&GEarthView", "About"), self.iface.mainWindow())
+        QObject.connect(self.aboutAction, SIGNAL("triggered()"), self.about)
+
+
+        
+        self.toolBar = self.iface.mainWindow().findChild(QObject, 'Geodrinx')
+        if not self.toolBar :
+          self.toolBar = self.iface.addToolBar("Geodrinx")
+          self.toolBar.setObjectName("Geodrinx")
+
+        self.GECombo = QMenu(self.iface.mainWindow())
+        self.GECombo.addAction(self.action)
+        self.GECombo.addAction(self.PasteFromGEaction)
+        self.GECombo.addAction(self.aboutAction)
+        
+        self.toolButton = QToolButton()
+        self.toolButton.setMenu( self.GECombo )
+        self.toolButton.setDefaultAction( self.action )
+        self.toolButton.setPopupMode( QToolButton.InstantPopup )
+        
+        self.toolBar.addWidget(self.toolButton)
+        self.GECombo.setToolTip("GEarthView")         
+        
         # Add toolbar button and menu item
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(u"&GEarthView", self.action)
+        #self.iface.addToolBarIcon(self.action)
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.action)
 
         #------PasteFromGEaction---------------------------------
     
-        self.PasteFromGEaction = QAction(
-            QIcon(":/plugins/gearthview/icon2.png"), 
-            QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
-        QObject.connect(self.PasteFromGEaction, SIGNAL("activated()"), self.PasteFromGE)
+        #self.PasteFromGEaction = QAction(
+        #    QIcon(":/plugins/gearthview/icon2.png"), 
+        #    QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
+        #QObject.connect(self.PasteFromGEaction, SIGNAL("activated()"), self.PasteFromGE)
          
-        self.iface.addPluginToMenu(u"GEarthView", self.PasteFromGEaction)
+        self.iface.addPluginToWebMenu(u"GEarthView", self.PasteFromGEaction)
         
         
         #------ABOUT---------------------------------
            
-        self.aboutAction=QAction(QIcon(":/gearthview/about_icon.png"), QCoreApplication.translate(u"&GEarthView", "&About"), self.iface.mainWindow())
-        QObject.connect(self.aboutAction, SIGNAL("activated()"), self.about)
+        #self.aboutAction=QAction(QIcon(":/gearthview/about_icon.png"), QCoreApplication.translate(u"&GEarthView", "&About"), self.iface.mainWindow())
+        #QObject.connect(self.aboutAction, SIGNAL("activated()"), self.about)
          
-        self.iface.addPluginToMenu(u"&GEarthView", self.aboutAction)        
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.aboutAction)        
+
+    def unload(self):
+        # Remove the plugin menu item and icon
+        self.iface.removePluginWebMenu(u"&GEarthView", self.action)
+        self.iface.removePluginWebMenu(u"&GEarthView", self.PasteFromGEaction)
+        self.iface.removePluginWebMenu(u"&GEarthView", self.aboutAction)
+
+#        QObject.disconnect(self.action)
+#        QObject.disconnect(self.PasteFromGEaction)
+#        QObject.disconnect(self.aboutAction)
+#        self.toolBar.setVisible( false )
+        #virtual void QgisInterface::removeToolBarIcon 	( 	QAction *  	qAction	) 	
+        #self.toolBar.removeAction(self.action)
+        #self.toolBar.removeAction(self.PasteFromGEaction)
+        #self.toolBar.removeAction(self.aboutAction)
+        #del self.GECombo
+        self.toolBar.removeAction(self.action)
+        if not self.toolBar.actions() :
+          del self.toolBar       
+        #self.iface.removeToolBarIcon(self.action)
+
+###modified by Aldo Scorza (end)\
 
     def PasteFromGE(self):
    
@@ -110,8 +165,8 @@ class gearthview:
 
         tempdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "python/plugins/gearthview/temp"
         
-        salvalo2 = open(tempdir + "/doc2.kml",'w')
-
+#        salvalo2 = open(tempdir + "/doc2.kml",'w')
+        salvalo2 = codecs.open(tempdir + "/doc2.kml", 'w', encoding='utf-8')
         salvalo2.write (copyText)
 
         salvalo2.close()                
@@ -134,11 +189,11 @@ class gearthview:
 #        infoString = "GEarthView plugin \n\ndisplays QGis view into Google Earth\n\ntested on Windows and MacOSX\n\ngeodrinx@gmail.com"
         QMessageBox.information(self.iface.mainWindow(), "About GEarthView plugin",infoString)
 
-    def unload(self):
-        # Remove the plugin menu item and icon
-        self.iface.removePluginMenu(u"&GEarthView", self.action)
-#        self.iface.removePluginMenu(u"&GEarthView", self.PasteFromGEaction)        
-        self.iface.removeToolBarIcon(self.action)
+#    def unload(self):
+#        # Remove the plugin menu item and icon
+#        self.iface.removePluginWebMenu(u"&GEarthView", self.action)
+##        self.iface.removePluginMenu(u"&GEarthView", self.PasteFromGEaction)        
+#        self.iface.removeToolBarIcon(self.action)
 
     def doPaste(self,text):
         text = str(text)
@@ -181,8 +236,8 @@ class gearthview:
 
 				out_folder = tempdir
 				
-
-				kml=open(out_folder + '/doc.kml', 'w')
+				kml = codecs.open(out_folder + '/doc.kml', 'w', encoding='utf-8')
+#				kml=open(out_folder + '/doc.kml', 'w')
 				#
 
 				iface = qgis.utils.iface
