@@ -557,26 +557,49 @@ class gearthview:
 				        kml.write (stringazza)	
                 			        
 				        kml.write ('	<styleUrl>#default0</styleUrl>\n')
-			
-				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-				        kml.write (stringazza)                 	        
 
-#				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-#				        kml.write (stringazza)
-
-# Prendo il contenuto dei campi -------------
+# DESCRIPTION DATA-----------
+				        kml.write ('	<Snippet maxLines="0"></Snippet>\n')
+				        kml.write ('	<description><![CDATA[\n')				        
+				        kml.write ('<html><body><table border="1">\n')
+				        kml.write ('<tr><th>Field Name</th><th>Field Value</th></tr>\n')
+ 
+ # Prendo il contenuto dei campi -------------
 				        fff = feat.fields()
 				        num = fff.count()                
 				        iii = -1
 				        for f in layer.pendingFields(): 				        
 				           iii = iii + 1
 				           
-				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
+				           stringazza = ('<tr><td>%s</td><td>%s</td></tr>\n') %(f.name(),feat[iii])
 
 				           kml.write (stringazza)					           
-# -------------------------------------------
-                				        
-				        kml.write ('		</SchemaData></ExtendedData>\n')				        
+               	
+				        kml.write ('</table></body></html>\n')
+				        kml.write (']]></description>\n')
+				        
+# DESCRIPTION DATA-----------
+
+# EXTENDED DATA -------------			
+#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
+#				        kml.write (stringazza)                 	        
+#
+##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
+##				        kml.write (stringazza)
+#
+## Prendo il contenuto dei campi -------------
+#				        fff = feat.fields()
+#				        num = fff.count()                
+#				        iii = -1
+#				        for f in layer.pendingFields(): 				        
+#				           iii = iii + 1
+#				           
+#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
+#
+#				           kml.write (stringazza)					           
+#                				        
+#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
+# EXTENDED DATA -------------
 				        
 				        kml.write ('		<Point>\n')
 				        kml.write ('			<gx:drawOrder>1</gx:drawOrder>\n')
@@ -592,26 +615,49 @@ class gearthview:
                 	
 				        stringazza =   ('		<name>%s</name>\n') % (nele)
 				        kml.write (stringazza)
-				        
-				        stringazza = ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-				        kml.write (stringazza)
-				        
-#				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-#				        kml.write (stringazza)
 
-# Prendo il contenuto dei campi -------------
+# DESCRIPTION DATA-----------
+				        kml.write ('	<Snippet maxLines="0"></Snippet>\n')
+				        kml.write ('	<description><![CDATA[\n')				        
+				        kml.write ('<html><body><table border="1">\n')
+				        kml.write ('<tr><th>Field Name</th><th>Field Value</th></tr>\n')
+ 
+ # Prendo il contenuto dei campi -------------
 				        fff = feat.fields()
 				        num = fff.count()                
 				        iii = -1
 				        for f in layer.pendingFields(): 				        
 				           iii = iii + 1
 				           
-				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
+				           stringazza = ('<tr><td>%s</td><td>%s</td></tr>\n') %(f.name(),feat[iii])
 
-				           kml.write (stringazza)			           
-# -------------------------------------------
+				           kml.write (stringazza)					           
+               	
+				        kml.write ('</table></body></html>\n')
+				        kml.write (']]></description>\n')
 				        
-				        kml.write ('		</SchemaData></ExtendedData>\n')
+# DESCRIPTION DATA-----------
+				        
+# EXTENDED DATA -------------			
+#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
+#				        kml.write (stringazza)                 	        
+#
+##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
+##				        kml.write (stringazza)
+#
+## Prendo il contenuto dei campi -------------
+#				        fff = feat.fields()
+#				        num = fff.count()                
+#				        iii = -1
+#				        for f in layer.pendingFields(): 				        
+#				           iii = iii + 1
+#				           
+#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
+#
+#				           kml.write (stringazza)					           
+#                				        
+#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
+# EXTENDED DATA -------------
                 			        
 				        kml.write ('		<LineString>\n')
 				        kml.write ('			<tessellate>1</tessellate>\n')
@@ -638,25 +684,49 @@ class gearthview:
 				        stringazza =   ('		<name>%s</name>\n') % (nele)
 				        kml.write (stringazza)				        
 				        kml.write ('		<styleUrl>#msn_ylw-pushpin</styleUrl>\n')
-				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-				        kml.write (stringazza)
 				        
-#				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-#				        kml.write (stringazza)
-
-# Prendo il contenuto dei campi -------------
+# DESCRIPTION DATA-----------
+				        kml.write ('	<Snippet maxLines="0"></Snippet>\n')
+				        kml.write ('	<description><![CDATA[\n')				        
+				        kml.write ('<html><body><table border="1">\n')
+				        kml.write ('<tr><th>Field Name</th><th>Field Value</th></tr>\n')
+ 
+ # Prendo il contenuto dei campi -------------
 				        fff = feat.fields()
 				        num = fff.count()                
 				        iii = -1
 				        for f in layer.pendingFields(): 				        
 				           iii = iii + 1
 				           
-				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),unicode(feat[iii]))
+				           stringazza = ('<tr><td>%s</td><td>%s</td></tr>\n') %(f.name(),feat[iii])
 
-				           kml.write (stringazza)				           
-# -------------------------------------------
+				           kml.write (stringazza)					           
+               	
+				        kml.write ('</table></body></html>\n')
+				        kml.write (']]></description>\n')
 				        
-				        kml.write ('		</SchemaData></ExtendedData>\n')
+# DESCRIPTION DATA-----------				        
+				        
+# EXTENDED DATA -------------			
+#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
+#				        kml.write (stringazza)                 	        
+#
+##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
+##				        kml.write (stringazza)
+#
+## Prendo il contenuto dei campi -------------
+#				        fff = feat.fields()
+#				        num = fff.count()                
+#				        iii = -1
+#				        for f in layer.pendingFields(): 				        
+#				           iii = iii + 1
+#				           
+#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
+#
+#				           kml.write (stringazza)					           
+#                				        
+#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
+# EXTENDED DATA -------------
                 				        
 				        kml.write ('		<Polygon>\n')
 				        kml.write ('			<tessellate>1</tessellate>\n')

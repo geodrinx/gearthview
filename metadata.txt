@@ -32,8 +32,8 @@ icon=./icon.png
 tags=
 
 homepage=http://plugins.qgis.org/plugins/gearthview/
-tracker=http://plugins.qgis.org/plugins/gearthview/
-repository=https://docs.google.com/file/d/0Bwg_m86uaXY1LUR2aS1kM29Ha28/edit?usp=sharing
+tracker=https://github.com/geodrinx/gearthview/issues
+repository=https://github.com/geodrinx/gearthview
 
 
 # deprecated flag (applies to the whole plugin, not just a single version
