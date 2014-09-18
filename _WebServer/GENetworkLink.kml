@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Folder>
+	<name>GENetworkLink.kml</name>
+	<visibility>0</visibility>
+	<NetworkLink>
+		<name>Posiziona SemaCode</name>
+		<visibility>0</visibility>
+		<open>1</open>
+		<Region>
+			<LatLonAltBox>
+				<north>47.058885</north>
+				<south>36</south>
+				<east>18.75</east>
+				<west>6.848544</west>
+				<minAltitude>0</minAltitude>
+				<maxAltitude>0</maxAltitude>
+			</LatLonAltBox>
+			<Lod>
+				<minLodPixels>10112</minLodPixels>
+				<maxLodPixels>-1</maxLodPixels>
+				<minFadeExtent>0</minFadeExtent>
+				<maxFadeExtent>0</maxFadeExtent>
+			</Lod>
+		</Region>
+		<Link>
+			<href>http://localhost:5558/form?</href>
+			<refreshInterval>2</refreshInterval>
+			<viewRefreshMode>onStop</viewRefreshMode>
+			<viewRefreshTime>1</viewRefreshTime>
+		</Link>
+	</NetworkLink>
+</Folder>
+</kml>

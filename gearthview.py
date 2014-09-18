@@ -6,7 +6,9 @@
  GEarth View
                               -------------------
         begin                : 2013-06-22
-        copyright            : (C) 2013 by geodrinx
+        public version       : 2014-09-18
+        
+        copyright            : (C) 2013 2014   by geodrinx
         email                : geodrinx@gmail.com
         
         history              :
@@ -14,7 +16,9 @@
           Plugin Creation      Roberto Angeletti
           
           menu and icons         Aldo Scorza
-                             
+
+          QgsRemoteControl       Matthias Ludwig     
+                                       
  ***************************************************************************/
 
 /***************************************************************************
@@ -41,6 +45,12 @@ import datetime
 import time
 import codecs
 
+#from http.server import HTTPServer, CGIHTTPRequestHandler
+
+#import BaseHTTPServer, CGIHTTPServer
+
+# https://pypi.python.org/pypi/qrcode
+#import qrcode
 
 # Initialize Qt resources from file resources.py
 import resources_rc
@@ -53,10 +63,32 @@ if QGis.QGIS_VERSION_INT < 10900:
     from osgeo import gdalconst
 
 
+### important
+import qtreactor.qt4reactor as qt4reactor
+try:
+    qt4reactor.install()
+except qt4reactor.ReactorAlreadyInstalledError:
+    print "still installed, doing nothing"
+except AttributeError:
+    pass
+except:
+    raise
 
+## INSTALL qt4reactor before importing the twisted stuff
+from twisted.internet import reactor
+from twisted.web import server    
+
+###
+
+# ----------------------------------------------------
 class gearthview:
 
+
     def __init__(self, iface):
+
+        global serverStarted
+        serverStarted = 0
+
         # Save reference to the QGIS interface
         self.iface = iface
         # Create the dialog and keep reference
@@ -81,6 +113,8 @@ class gearthview:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
+
+# ----------------------------------------------------
 ###modified by Aldo Scorza (start)
     def initGui(self):
         # Create action that will start plugin configuration
@@ -94,6 +128,11 @@ class gearthview:
         self.aboutAction= QAction(QIcon(self.plugin_dir + "/iconA.png"), QCoreApplication.translate(u"&GEarthView", "About"), self.iface.mainWindow())
         QObject.connect(self.aboutAction, SIGNAL("triggered()"), self.about)
 
+        self.QRcodingAction= QAction(QIcon(self.plugin_dir + "/iconQR.png"), QCoreApplication.translate(u"&GEarthView", "GE_QRcoding"), self.iface.mainWindow())
+        QObject.connect(self.QRcodingAction, SIGNAL("triggered()"), self.startQrCoding)
+
+        self.QGEarthAction= QAction(QIcon(self.plugin_dir + "/iconQG.png"), QCoreApplication.translate(u"&GEarthView", "QGEarth"), self.iface.mainWindow())
+        QObject.connect(self.QGEarthAction, SIGNAL("triggered()"), self.QGEarth)        
 
         
         self.toolBar = self.iface.mainWindow().findChild(QObject, 'Geodrinx')
@@ -105,6 +144,8 @@ class gearthview:
         self.GECombo.addAction(self.action)
         self.GECombo.addAction(self.PasteFromGEaction)
         self.GECombo.addAction(self.aboutAction)
+        self.GECombo.addAction(self.QRcodingAction)        
+        self.GECombo.addAction(self.QGEarthAction)
         
         self.toolButton = QToolButton()
         self.toolButton.setMenu( self.GECombo )
@@ -115,26 +156,19 @@ class gearthview:
         self.GECombo.setToolTip("GEarthView")         
         
         # Add toolbar button and menu item
-        #self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToWebMenu(u"&GEarthView", self.action)
 
-        #------PasteFromGEaction---------------------------------
-    
-        #self.PasteFromGEaction = QAction(
-        #    QIcon(":/plugins/gearthview/icon2.png"), 
-        #    QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
-        #QObject.connect(self.PasteFromGEaction, SIGNAL("activated()"), self.PasteFromGE)
-         
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.action)
+        
         self.iface.addPluginToWebMenu(u"GEarthView", self.PasteFromGEaction)
-        
-        
-        #------ABOUT---------------------------------
-           
-        #self.aboutAction=QAction(QIcon(":/gearthview/about_icon.png"), QCoreApplication.translate(u"&GEarthView", "&About"), self.iface.mainWindow())
-        #QObject.connect(self.aboutAction, SIGNAL("activated()"), self.about)
-         
+                 
         self.iface.addPluginToWebMenu(u"&GEarthView", self.aboutAction)        
 
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.QRcodingAction)
+
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.QGEarthAction)        
+        
+
+# ---------------------------------------------------------
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginWebMenu(u"&GEarthView", self.action)
@@ -157,6 +191,8 @@ class gearthview:
 
 ###modified by Aldo Scorza (end)\
 
+
+# ----------------------------------------------------
     def PasteFromGE(self):
    
         copyText = QApplication.clipboard().text()
@@ -183,6 +219,194 @@ class gearthview:
           QgsMapLayerRegistry.instance().addMapLayer(vlayer)   
 
 
+# ----------------------------------------------------
+    def startQrCoding(self):
+
+				global serverStarted
+
+				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"        
+				port = 5558
+
+				from twisted.web.resource import Resource        
+
+				from twisted.web.twcgi import CGIScript
+				resource = CGIScript(webServerDir) 
+        
+				if platform.system() == "Windows":            
+					os.startfile(webServerDir + 'GENetworkLink.kml')
+						
+				if platform.system() == "Darwin":			
+					os.system("open " + str(webServerDir + 'GENetworkLink.kml'))
+						
+				if platform.system() == "Linux":            
+					os.system("xdg-open " + str(webServerDir + 'GENetworkLink.kml'))
+					
+					
+        
+				if ( serverStarted == 0) :
+					print ("Facciamo partire il Server !!!\n")
+					serverStarted = 1
+
+
+#					wdir = webServerDir.replace("/", "\\")
+#					comando = wdir + "lancia.bat"
+#					print comando
+#					os.chdir(wdir)
+#					if platform.system() == "Windows":            
+#						os.startfile(wdir + 'lancia.bat')
+					
+					print ("Server Started -----------------------------------!!!\n")
+
+# ---------------------------------------------
+					class FormPage(Resource):
+					   def __init__(self, iface, pluginDir):
+					      self.iface = iface
+					      self.pluginDir = pluginDir
+
+               
+					   def render_GET(self, request):
+
+#					      newdata = request.content.getvalue()
+					      print request
+
+#<GET /form?BBOX=16.3013171267662,38.63325421913416,16.62443680433362,38.86443091553171 HTTP/1.1>
+
+					      stringa = str(request)
+					      stringa = stringa.replace('<GET /form?BBOX=','')
+					      stringa = stringa.replace(' HTTP/1.1>','')
+                					   					      
+					      bbox = stringa.split(',')
+					      
+					      west  = float(bbox[0])
+					      south = float(bbox[1])
+					      east  = float(bbox[2])
+					      north = float(bbox[3])
+
+					      lon = ((east - west) / 2) + west
+					      lat = ((north - south) / 2) + south
+
+					      kml = ( 
+      '<?xml version="1.0" encoding="UTF-8"?>\n'
+      '<kml xmlns="http://www.opengis.net/kml/2.2">\n'
+      ' <Placemark>\n'
+      '  <name>Point</name>\n'
+      '	<Snippet maxLines="0"></Snippet>\n'
+      '  <description>\n')
+      
+					      kml = kml + ('<![CDATA[<html>lat  long<br><br>%.14f,%.14f<br><br><table border=1 style="border-collapse:collapse; border-color:#000000;"cellpadding=0 cellspacing=0  width=250 style="FONT-SIZE: 11px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;"><tr><td bgcolor="#E3E1CA" align="right"><font COLOR="#FF0000"><b>CODE</b></font></td><td bgcolor="#E4E6CA"> <font COLOR="#008000">\n')  %(lat,lon)
+
+					      qrCodeUrl = ("http://qrcode.kaywa.com/img.php?s=8&amp;d=%.14f,%.14f") %(lat,lon)
+   
+					      kml = kml + ('<img alt="" src="%s" /></html>]]></description>\n') %(qrCodeUrl)   
+
+
+					      kml = kml + ('  <Style>\n'
+      '   <Icon>\n'
+      '  	<href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png</href>\n'
+      '   </Icon>\n' 
+      '  </Style>\n'   
+      '  <Point>\n'
+      '    <coordinates>%.14f,%.14f</coordinates>\n'
+      '  </Point>\n'
+      ' </Placemark>\n'
+      '</kml>'
+      ) %( lon, lat)
+
+
+					      canvas = self.iface.mapCanvas()
+					      mapRenderer = canvas.mapRenderer()
+					      srs = mapRenderer.destinationCrs()
+				
+					      crsSrc = QgsCoordinateReferenceSystem(4326)
+					      crsDest = QgsCoordinateReferenceSystem(srs) 
+					      xform = QgsCoordinateTransform(crsSrc, crsDest)
+				
+					      pt1 = xform.transform(QgsPoint(west, south))
+					      pt2 = xform.transform(QgsPoint(east, north))        							
+
+					      box = QgsRectangle(pt1.x(), pt1.y(), pt2.x(), pt2.y())
+				
+					      self.iface.mapCanvas().setExtent(box)
+					      self.iface.mapCanvas().refresh()
+
+					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
+					      return kml					   
+					   					   
+
+
+					   def render_POST(self, request):
+					      print request.__dict__
+					      newdata = request.content.getvalue()
+					      print newdata, type(newdata)
+#					      QtGui.QMessageBox.information(self.iface.mainWindow(), "GEarthViewServer", u"recieved something.\n{}".format(newdata))
+
+					      if newdata['bbox']:
+					         self.iface.mapCanvas().setExtent(QgsRectangle(newdata['bbox']['xmin'], newdata['bbox']['ymin'], newdata['bbox']['xmax'], newdata['bbox']['ymax']))
+					      else:
+					         self.iface.mapCanvas().zoomToFullExtent()
+               
+					      return ''
+
+					root = Resource()
+					root.putChild("form", FormPage(self.iface, self.plugin_dir))
+
+					reactor.listenTCP(5558, server.Site(root))
+					reactor.run()
+# ---------------------------------------------
+
+
+            
+           
+# Display the current GEarth view in QGis ------------------------------------------
+    def QGEarth(self):
+
+				if ( serverStarted == 0) :
+						print ("Fai partire prima il Server !!!\n")
+						return
+						
+				print "QGEarth"
+
+				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"
+				
+				f = open(webServerDir + 'QGEarth.log', 'r')
+
+				strings = f.readlines()
+				
+				west       = float(strings[0])
+				south      = float(strings[1])
+				east       = float(strings[2])
+				north      = float(strings[3])
+				
+				lon        = float(strings[4])
+				lat        = float(strings[5])
+				qrCodeUrl  = strings[6]
+
+#				img = qrcode.make('Some data here')
+#				print img
+
+
+				canvas = self.iface.mapCanvas()
+				mapRenderer = canvas.mapRenderer()
+				srs = mapRenderer.destinationCrs()
+				
+				crsSrc = QgsCoordinateReferenceSystem(4326)
+				crsDest = QgsCoordinateReferenceSystem(srs) 
+				xform = QgsCoordinateTransform(crsSrc, crsDest)
+				
+				pt1 = xform.transform(QgsPoint(west, south))
+				pt2 = xform.transform(QgsPoint(east, north))        							
+
+				box = QgsRectangle(pt1.x(), pt1.y(), pt2.x(), pt2.y())
+				
+				self.iface.mapCanvas().setExtent(box)
+				self.iface.mapCanvas().refresh()
+
+				f.close() 
+				
+	           
+               
+
+# ----------------------------------------------------
     def about(self):
         infoString = QCoreApplication.translate('GEarthView', "GEarthView Plugin<br>This plugin displays QGis view into Google Earth.<br>Author:  Bob MaX (aka: geodrinx)<br>Mail: <a href=\"mailto:geodrinx@gmail.com\">geodrinx@gmail.com</a><br>Web: <a href=\"http://exporttocanoma.blogspot.it\">exporttocanoma.blogspot.it</a><br></b>.")
 #        infoString = QCoreApplication.translate('GEarthView', "GEarthView Plugin<br>This plugin displays QGis view into Google Earth.<br>Author:  Bob MaX (aka: geodrinx)<br>Mail: <a href=\"mailto:geodrinx@gmail.com\">geodrinx@gmail.com</a><br>Web: <a href=\"http://exporttocanoma.blogspot.it\">exporttocanoma.blogspot.it</a><br>" + "<b>Do yo like this plugin? Please consider <a href=\"https://www.paypal.com\">donating</a></b>.")    
@@ -325,8 +549,8 @@ class gearthview:
 				kml.write('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">\n')				
 				kml.write('    <Document>\n')
 				kml.write('    	 <name>QGisView</name>\n')
-
-				loc = ("    	 <description>http://map.project-osrm.org/?loc=%.9lf,%.9lf</description>\n") %(yc, xc)
+				kml.write('    	 <Snippet maxLines="0"></Snippet>\n') 
+				loc = ("    	 <description><![CDATA[http://map.project-osrm.org/?loc=%.9lf,%.9lf&ly=1784084387]]></description>\n") %(yc, xc)
 
 				kml.write(loc)
 #
@@ -543,6 +767,8 @@ class gearthview:
 				      # fetch geometry
 				      geom = feat.geometry()
 				       # show some information about the feature
+
+#				      print ("GeomType: %d") %(geom.type())
 				      
 				      if geom.type() == QGis.Point:
 				        elem = geom.asPoint()
@@ -736,6 +962,17 @@ class gearthview:
               
 				        elem = geom.asPolygon()
 
+# h ttp://qgis.spatialthoughts.com/2012/11/tip-count-number-of-vertices-in-layer.html				        
+				        if geom.isMultipart():
+				          print "MULTIPART !!!"
+				          elem = geom.asMultiPolygon()
+
+				          for polygon in elem:
+				             for ring in polygon:
+				                print ("Pezzo con %d vertici") %(len(ring))
+
+                     
+                            			        			        
 				        for iii in range (len(elem)):
 
 				          if (iii == 1):				          
@@ -757,9 +994,12 @@ class gearthview:
 				          for jjj in range (len(elem[iii])):
 				                         
 				            x1,y1 = elem[iii][jjj][0], elem[iii][jjj][1]
-				            
-				            pt1 = xform.transform(QgsPoint(x1, y1))
-                           
+
+				            if geom.isMultipart():
+				               pt1 = xform.transform(x1)
+				            else:				            
+				               pt1 = xform.transform(QgsPoint(x1, y1))
+                          
 				            stringazza =   ('%.9lf,%.9lf,0 \n') % (pt1.x(), pt1.y())
 				            kml.write (stringazza)
 
@@ -774,7 +1014,7 @@ class gearthview:
 				           kml.write ('        </LinearRing>\n')
 				           kml.write ('     </innerBoundaryIs>\n')
 				           kml.write ('   </Polygon>\n')	
-                   				        
+                  				        
 				        kml.write ('	</Placemark>\n')
 				        
 				    kml.write ('  </Folder>\n')
