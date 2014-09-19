@@ -88,6 +88,10 @@ class gearthview:
 
         global serverStarted
         serverStarted = 0
+        
+        global lat, lon
+        lat  = 0.00
+        lon  = 0.00
 
         # Save reference to the QGIS interface
         self.iface = iface
@@ -233,13 +237,13 @@ class gearthview:
 				resource = CGIScript(webServerDir) 
         
 				if platform.system() == "Windows":            
-					os.startfile(webServerDir + 'GENetworkLink.kml')
+					os.startfile(webServerDir + 'QGIS_link.kmz')
 						
 				if platform.system() == "Darwin":			
-					os.system("open " + str(webServerDir + 'GENetworkLink.kml'))
+					os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
 						
 				if platform.system() == "Linux":            
-					os.system("xdg-open " + str(webServerDir + 'GENetworkLink.kml'))
+					os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
 					
 					
         
@@ -265,6 +269,8 @@ class gearthview:
 
                
 					   def render_GET(self, request):
+
+					      global lat,lon
 
 #					      newdata = request.content.getvalue()
 					      print request
@@ -320,16 +326,78 @@ class gearthview:
 					      crsSrc = QgsCoordinateReferenceSystem(4326)
 					      crsDest = QgsCoordinateReferenceSystem(srs) 
 					      xform = QgsCoordinateTransform(crsSrc, crsDest)
-				
-					      pt1 = xform.transform(QgsPoint(west, south))
-					      pt2 = xform.transform(QgsPoint(east, north))        							
 
-					      box = QgsRectangle(pt1.x(), pt1.y(), pt2.x(), pt2.y())
+
+					      # ----  Coordinate finestra QGIS      ---
+					      boundBox = canvas.extent()    
+					      xMin = float(boundBox.xMinimum())
+					      yMin = float(boundBox.yMinimum())
+					      xMax = float(boundBox.xMaximum())                
+					      yMax = float(boundBox.yMaximum())
+
+
+					      # ----  Centro della Finestra QGIS      ---
+					      centerX = ((xMax - xMin) / 2.) + xMin
+					      centerY = ((yMax - yMin) / 2.) + yMin
+
+
+					      # ----  Centro della Finestra GE        ---
+					      GEcenterX = ((east  - west)  / 2.) + west
+					      GEcenterY = ((north - south) / 2.) + south
+
+				
+					      # ----  Finestra GE in coords QGIS ---
+					      pt1 = xform.transform(QgsPoint(west, south))
+					      pt2 = xform.transform(QgsPoint(east, north))
+
+
+					      # ---- Delta della finestra GE in coords QGIS ---
+					      GEdeltaX = (pt2.x() - pt1.x())
+					      GEdeltaY = (pt2.y() - pt1.y())
+
+					      # ---- Raggio della finestra GE in coords QGIS ---
+					      GERagX = float(GEdeltaX) / 2.
+					      GERagY = float(GEdeltaY) / 2.
+
+					      GEraggio = float(GERagX)
+					      if ( GEdeltaX < GEdeltaY ):
+					         GEraggio = float(GERagY)
+
+					      # ---- Delta della finestra QGIS ---
+					      QGSdeltaX = (float(xMax) - float(xMin))
+					      QGSdeltaY = (float(yMax) - float(yMin))
+
+					      # ---- Raggio della finestra QGIS ---
+					      QGSRagX = float(QGSdeltaX) / 2. 
+					      QGSRagY = float(QGSdeltaY) / 2.					      
+                   					      
+					      QGSraggio = float(QGSRagX)
+					      if ( QGSdeltaX < QGSdeltaY ):
+					         QGSraggio = float(QGSRagY)
+					         
+#					      raggio = float(GEraggio) / float(QGSraggio)
+					      raggio = GEraggio
+					      
+#					      print ("raggio = %f") %(raggio)
+        
+					      # ----  Centro della Finestra GE in coords QGIS ---
+					      pt3 = xform.transform(QgsPoint(GEcenterX, GEcenterY)) 
+
+					      # ---- Coordinate della finestra QGIS in base a quella di GE ---
+					      x1 = pt3.x() - float(raggio)
+					      y1 = pt3.y() - float(raggio)             
+					      x2 = pt3.x() + float(raggio)
+					      y2 = pt3.y() + float(raggio)
+
+
+					      box = QgsRectangle(x1, y1, x2, y2)
 				
 					      self.iface.mapCanvas().setExtent(box)
 					      self.iface.mapCanvas().refresh()
 
-					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
+#					      gearthview.run(self)
+
+#					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
 					      return kml					   
 					   					   
 
@@ -357,52 +425,80 @@ class gearthview:
 
             
            
-# Display the current GEarth view in QGis ------------------------------------------
+# Add the current GEarth point in QGis current drawing function ------------------------------------------
     def QGEarth(self):
 
 				if ( serverStarted == 0) :
-						print ("Fai partire prima il Server !!!\n")
+						QMessageBox.critical(self.iface.mainWindow(), "You need to startQrCoding, before !!!", "")
+						print ("You need to startQrCoding, before !!!\n")
 						return
+
+				global lat, lon
 						
-				print "QGEarth"
-
-				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"
-				
-				f = open(webServerDir + 'QGEarth.log', 'r')
-
-				strings = f.readlines()
-				
-				west       = float(strings[0])
-				south      = float(strings[1])
-				east       = float(strings[2])
-				north      = float(strings[3])
-				
-				lon        = float(strings[4])
-				lat        = float(strings[5])
-				qrCodeUrl  = strings[6]
-
-#				img = qrcode.make('Some data here')
-#				print img
-
+#				print ("QGEarth %f %f") %(lat, lon) 
 
 				canvas = self.iface.mapCanvas()
-				mapRenderer = canvas.mapRenderer()
-				srs = mapRenderer.destinationCrs()
-				
-				crsSrc = QgsCoordinateReferenceSystem(4326)
-				crsDest = QgsCoordinateReferenceSystem(srs) 
-				xform = QgsCoordinateTransform(crsSrc, crsDest)
-				
-				pt1 = xform.transform(QgsPoint(west, south))
-				pt2 = xform.transform(QgsPoint(east, north))        							
+				layer = canvas.currentLayer()
 
-				box = QgsRectangle(pt1.x(), pt1.y(), pt2.x(), pt2.y())
-				
-				self.iface.mapCanvas().setExtent(box)
-				self.iface.mapCanvas().refresh()
+				if layer:
+				  if layer.type() == layer.VectorLayer:
 
-				f.close() 
+				    provider = layer.dataProvider()
+				    Edit = layer.isEditable()
+            				  				
+				    if ( Edit == 0 ):
+				       QMessageBox.critical(self.iface.mainWindow(), "WARNING: Layer not editable", str(layer.name())) 
+				       return
+               
+				    srs = layer.crs();
+				    crsSrc = QgsCoordinateReferenceSystem(4326)
+				    crsDest = QgsCoordinateReferenceSystem(srs) 
+				    xform = QgsCoordinateTransform(crsSrc, crsDest)
+				    pt = xform.transform(QgsPoint(lon, lat))
 				
+				    gPnt = QgsGeometry.fromPoint(QgsPoint(pt.x(),pt.y()))
+				    
+#				    print ("QGEarth %f %f %f %f") %(lat, lon, pt.x(), pt.y())               				    
+
+				    feature = QgsFeature()
+				    feature.setGeometry( gPnt )
+				    provider.addFeatures([feature])
+				    layer.updateExtents()
+				    
+#				    layer.commitChanges()
+
+				    canvas.refresh()
+
+
+				    
+				    
+
+#  ------- OLD CODE ------------------------------------------------------
+#				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"
+#				f = open(webServerDir + 'QGEarth.log', 'r')
+#				strings = f.readlines()
+#				west       = float(strings[0])
+#				south      = float(strings[1])
+#				east       = float(strings[2])
+#				north      = float(strings[3])
+#				lon        = float(strings[4])
+#				lat        = float(strings[5])
+##				qrCodeUrl  = strings[6]
+##				img = qrcode.make('Some data here')
+##				print img
+#				canvas = self.iface.mapCanvas()
+#				mapRenderer = canvas.mapRenderer()
+#				srs = mapRenderer.destinationCrs()				
+#				crsSrc = QgsCoordinateReferenceSystem(4326)
+#				crsDest = QgsCoordinateReferenceSystem(srs) 
+#				xform = QgsCoordinateTransform(crsSrc, crsDest)
+#				pt1 = xform.transform(QgsPoint(west, south))
+#				pt2 = xform.transform(QgsPoint(east, north))        							
+#				box = QgsRectangle(pt1.x(), pt1.y(), pt2.x(), pt2.y())
+#				self.iface.mapCanvas().setExtent(box)
+#				self.iface.mapCanvas().refresh()
+#				f.close() 
+#  ------- OLD CODE ------------------------------------------------------				
 	           
                
 

@@ -1,3 +1,26 @@
+--------------------------
+GEarthView 2.0 version :
+--------------------------
+
+Install the following python libraries: 
+
+qtreactor\
+twisted\            Twisted-13.0.0-py2.7-win32   ( https  pypi.python.org/pypi/Twisted/13.0.0  )  
+zope\               zope.interface-3.6.0-py2.7-win32   ( https pypi.python.org/pypi/zope.interface/3.6.0 )
+
+pypi.python.org/pypi/Twisted/13.0.0
+
+(totally 33 mega)
+
+
+in the following directory (depending to QGIS version) :
+
+QGIS Valmiera\apps\Python27\Lib\site-packages\
+
+
+
+
+
 Plugin Builder Results
 
 Your plugin gearthview was created in:
