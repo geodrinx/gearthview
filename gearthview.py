@@ -1442,7 +1442,7 @@ class gearthview:
 
 # ----------------------------------------------------
     def startQrCoding(self):
-
+ 
 				global serverStarted
 
 				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"        
@@ -1484,15 +1484,23 @@ class gearthview:
 					      global Zeta
 					      global description
 
-#					      newdata = request.content.getvalue()
-					      print request
+#------					      newdata = request.content.getvalue()
+#					      print request
 
 #<GET /form?BBOX=16.3013171267662,38.63325421913416,16.62443680433362,38.86443091553171 HTTP/1.1>
 #<GET /form?p=1&BBOX=-0.02411607307235109,-0.08678435516867355,0.149613182683106,0.06773426441872454 HTTP/1.1>
 #<GET /form?p=0&bboxWest=12.13495518195707&%0A%09%09%09&bboxSouth=42.72418498839377&%0A%09%09%09&bboxEast=12.13932970664519&%0A%09%09%09&bboxNorth=42.72713741547008&%09%0A%09%09%09&lookatTerrainLon=12.13714248521776&%0A%09%09%09&lookatTerrainLat=42.7256612227012&%0A%09%09%09&lookatTerrainAlt=112.88& HTTP/1.1>
 #<GET /form?p=0&BBOX=12.1356167437372,42.7264889613262,12.13701876665762,42.72743519322518&LookAt=12.13631776054357,42.72696207941286,205.39&LookatHeading=-0.002&LookatTilt=0&LookatTerrain=12.13631776055484,42.72696207945101,117.08&terrain=1 HTTP/1.1>
 #<GET /form?p=0&BBOX=12.13560526927239,42.72643977188249,12.13703061697471,42.72740174642745&LookatTerrain=12.13631794864158,42.72692076136277,116.9&terrain=1 HTTP/1.1>
+#<GET /form?p=1&BBOX=10.20045469843596,43.66302191930933,10.66672168693798,43.8667284090175&LookatTerrain=10.43397243010223,43.76510664670415,13.83&terrain=1&CAMERA=10.43397248408143,43.76510665598479,29287.22,0,-0.556&VIEW=60,38.141,1306,782 HTTP/1.1>
 
+#<viewFormat>
+#            BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth];
+#            LookatTerrain=[lookatTerrainLon],[lookatTerrainLat],[lookatTerrainAlt];
+#            terrain=[terrainEnabled];
+#            CAMERA=[lookatLon],[lookatLat],[lookatRange],[lookatTilt],[lookatHeading];
+#            VIEW=[horizFov],[vertFov],[horizPixels],[vertPixels]
+#</viewFormat>
 
 					      stringa = str(request)
 					      stringa = stringa.replace('<GET /form?','')                           
@@ -1509,6 +1517,24 @@ class gearthview:
 					      param2 = params[2].replace('LookatTerrain=','')
 					      LookatTerrain = param2.split(',')
 
+					      param3 = params[3].replace('terrain=','')
+					      param4 = params[4].replace('CAMERA=','')
+					      param5 = params[5].replace('VIEW=','')
+
+					      CAMERA = param4.split(',')
+
+					      lookatLon = float(CAMERA[0])
+					      lookatLat = float(CAMERA[1])
+					      lookatRange = float(CAMERA[2])
+					      lookatTilt = float(CAMERA[3])
+					      lookatHeading = float(CAMERA[4])
+					      
+#					      print("lookatLon %f")  %(lookatLon)
+#					      print("lookatLat %f")  %(lookatLat)
+#					      print("lookatRange %f")  %(lookatRange)
+#					      print("lookatTilt %f")  %(lookatTilt)
+#					      print("lookatHeading %f")  %(lookatHeading)                                                
+
 					      west  = float(bbox[0])
 					      south = float(bbox[1])
 					      east  = float(bbox[2])
@@ -1520,7 +1546,7 @@ class gearthview:
      
 #					      print ("Zeta = %f") %(Zeta)
 
-					      msg = ("LonLatH = %s,%s,%s") %(lon,lat,Zeta)
+					      msg = ("LonLatH = %s, %s    elev = %s m      alt =  %s m") %(lon,lat,Zeta, lookatRange)
 					      self.iface.mainWindow().statusBar().showMessage(msg)
 
 #					      lon = ((east - west) / 2) + west
@@ -1577,66 +1603,33 @@ class gearthview:
 					      crsSrc = QgsCoordinateReferenceSystem(4326)
 					      crsDest = QgsCoordinateReferenceSystem(srs) 
 					      xform = QgsCoordinateTransform(crsSrc, crsDest)
-
-
-					      # ----  Coordinate finestra QGIS      ---
-					      boundBox = canvas.extent()    
-					      xMin = float(boundBox.xMinimum())
-					      yMin = float(boundBox.yMinimum())
-					      xMax = float(boundBox.xMaximum())                
-					      yMax = float(boundBox.yMaximum())
-
-
-					      # ----  Centro della Finestra QGIS      ---
-					      centerX = ((xMax - xMin) / 2.) + xMin
-					      centerY = ((yMax - yMin) / 2.) + yMin
-
-				
-					      # ----  Finestra GE in coords QGIS ---
-					      pt1 = xform.transform(QgsPoint(west, south))
-					      pt2 = xform.transform(QgsPoint(east, north))
-
 					      
-					      # ---- Delta della finestra GE in coords QGIS ---
-					      GEdeltaX = (pt2.x() - pt1.x())
-					      GEdeltaY = (pt2.y() - pt1.y())
-
-					      # ----  Centro della Finestra GE  in coords QGIS      ---
-					      GEcenterX = (GEdeltaX  / 2.) + pt1.x()
-					      GEcenterY = (GEdeltaY  / 2.) + pt1.y()
-
-
-					      # ---- Raggio della finestra GE in coords QGIS ---
-					      GERagX = float(GEdeltaX) / 2.
-					      GERagY = float(GEdeltaY) / 2.
-
-					      GEraggio = float(GERagY)
-#					      if ( GERagX < GERagY ):
-#					         GEraggio = float(GERagX)
-
-					      # ---- Delta della finestra QGIS ---
-					      QGSdeltaX = (float(xMax) - float(xMin))
-					      QGSdeltaY = (float(yMax) - float(yMin))
-
-					      # ---- Raggio della finestra QGIS ---
-					      QGSRagX = float(QGSdeltaX) / 2. 
-					      QGSRagY = float(QGSdeltaY) / 2.					      
-                   					      
-					      QGSraggio = float(QGSRagX)
-					      if ( QGSRagX < QGSRagY ):
-					         QGSraggio = float(QGSRagY)
-					         
-
-					      raggio = GEraggio  # - (GEraggio / 30.)
-					      
+   
+					      GEraggio = (lookatRange - Zeta) / 2.
+                
+					      raggio = GEraggio
+                                 
+                
+                # Calculate QgisViewBox from 3D geoCoords
+                                 					      
 #					      print ("raggio = %f") %(raggio)
-        
+                
+					      ilMetroGeo = 0.000011922282515       
 
-					      # ---- Coordinate della finestra QGIS in base a quella di GE ---
-					      x1 = GEcenterX - float(raggio)
-					      y1 = GEcenterY - float(raggio)             
-					      x2 = GEcenterX + float(raggio)
-					      y2 = GEcenterY + float(raggio)
+					      raggioGeo = raggio * ilMetroGeo
+
+					      x1Geo = lon - float(raggioGeo)
+					      y1Geo = lat - float(raggioGeo)             
+					      x2Geo = lon + float(raggioGeo)
+					      y2Geo = lat + float(raggioGeo)
+
+					      pt1 = xform.transform(QgsPoint(x1Geo, y1Geo))
+					      pt2 = xform.transform(QgsPoint(x2Geo, y2Geo))
+
+					      x1 = pt1.x()
+					      y1 = pt1.y()             
+					      x2 = pt2.x()
+					      y2 = pt2.y()               
 
 
 					      box = QgsRectangle(x1, y1, x2, y2)
@@ -1652,7 +1645,7 @@ class gearthview:
 					         QGEarth_addPoint(self)
 
 					             
-					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
+#					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
 
 #					      kml_2 = GDX_Publisher2(self)
 #					      kml = kml + kml_2
