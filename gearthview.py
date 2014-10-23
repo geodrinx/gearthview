@@ -81,6 +81,244 @@ from twisted.web import server
 
 ###
 
+# ----------------------------------------------------
+def startGeoDrink_Server(self):
+ 
+				global serverStarted
+
+				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"        
+				port = 5558
+
+				from twisted.web.resource import Resource        
+
+#				from twisted.web.twcgi import CGIScript
+        
+#				resource = CGIScript(webServerDir) 
+        
+				if platform.system() == "Windows":            
+					os.startfile(webServerDir + 'QGIS_link.kmz')
+						
+				if platform.system() == "Darwin":			
+					os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
+						
+				if platform.system() == "Linux":            
+					os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
+					
+					
+        
+				if ( serverStarted == 0) :
+
+					serverStarted = 1
+					
+					print ("Start GDX_Server Start --------!!!\n")
+
+# ---------------------------------------------
+					class FormPage(Resource):
+					   def __init__(self, iface, pluginDir):
+					      self.iface = iface
+					      self.pluginDir = pluginDir
+
+               
+					   def render_GET(self, request):
+
+					      global lat,lon
+					      global Zeta
+					      global description
+
+#------					      newdata = request.content.getvalue()
+#					      print request
+
+#<GET /form?BBOX=16.3013171267662,38.63325421913416,16.62443680433362,38.86443091553171 HTTP/1.1>
+#<GET /form?p=1&BBOX=-0.02411607307235109,-0.08678435516867355,0.149613182683106,0.06773426441872454 HTTP/1.1>
+#<GET /form?p=0&bboxWest=12.13495518195707&%0A%09%09%09&bboxSouth=42.72418498839377&%0A%09%09%09&bboxEast=12.13932970664519&%0A%09%09%09&bboxNorth=42.72713741547008&%09%0A%09%09%09&lookatTerrainLon=12.13714248521776&%0A%09%09%09&lookatTerrainLat=42.7256612227012&%0A%09%09%09&lookatTerrainAlt=112.88& HTTP/1.1>
+#<GET /form?p=0&BBOX=12.1356167437372,42.7264889613262,12.13701876665762,42.72743519322518&LookAt=12.13631776054357,42.72696207941286,205.39&LookatHeading=-0.002&LookatTilt=0&LookatTerrain=12.13631776055484,42.72696207945101,117.08&terrain=1 HTTP/1.1>
+#<GET /form?p=0&BBOX=12.13560526927239,42.72643977188249,12.13703061697471,42.72740174642745&LookatTerrain=12.13631794864158,42.72692076136277,116.9&terrain=1 HTTP/1.1>
+#<GET /form?p=1&BBOX=10.20045469843596,43.66302191930933,10.66672168693798,43.8667284090175&LookatTerrain=10.43397243010223,43.76510664670415,13.83&terrain=1&CAMERA=10.43397248408143,43.76510665598479,29287.22,0,-0.556&VIEW=60,38.141,1306,782 HTTP/1.1>
+
+#<viewFormat>
+#            BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth];
+#            LookatTerrain=[lookatTerrainLon],[lookatTerrainLat],[lookatTerrainAlt];
+#            terrain=[terrainEnabled];
+#            CAMERA=[lookatLon],[lookatLat],[lookatRange],[lookatTilt],[lookatHeading];
+#            VIEW=[horizFov],[vertFov],[horizPixels],[vertPixels]
+#</viewFormat>
+
+					      stringa = str(request)
+					      stringa = stringa.replace('<GET /form?','')                           
+					      stringa = stringa.replace(' HTTP/1.1>','')
+					      params = stringa.split('&')
+
+					      param0 = params[0].replace('p=','')
+					      pony  = param0
+
+					      param1 = params[1].replace('BBOX=','')
+
+					      bbox = param1.split(',')
+
+					      param2 = params[2].replace('LookatTerrain=','')
+					      LookatTerrain = param2.split(',')
+
+					      param3 = params[3].replace('terrain=','')
+					      param4 = params[4].replace('CAMERA=','')
+					      param5 = params[5].replace('VIEW=','')
+
+					      CAMERA = param4.split(',')
+
+					      lookatLon = float(CAMERA[0])
+					      lookatLat = float(CAMERA[1])
+					      lookatRange = float(CAMERA[2])
+					      lookatTilt = float(CAMERA[3])
+					      lookatHeading = float(CAMERA[4])
+					      
+#					      print("lookatLon %f")  %(lookatLon)
+#					      print("lookatLat %f")  %(lookatLat)
+#					      print("lookatRange %f")  %(lookatRange)
+#					      print("lookatTilt %f")  %(lookatTilt)
+#					      print("lookatHeading %f")  %(lookatHeading)                                                
+
+					      west  = float(bbox[0])
+					      south = float(bbox[1])
+					      east  = float(bbox[2])
+					      north = float(bbox[3])
+
+					      lon = float(LookatTerrain[0])
+					      lat = float(LookatTerrain[1])
+					      Zeta = float(LookatTerrain[2])
+     
+#					      print ("Zeta = %f") %(Zeta)
+
+					      msg = ("LonLatH = %s, %s    elev = %s m      alt =  %s m") %(lon,lat,Zeta, lookatRange)
+					      self.iface.mainWindow().statusBar().showMessage(msg)
+
+#					      lon = ((east - west) / 2) + west
+#					      lat = ((north - south) / 2) + south
+
+					      kml = ( 
+
+      '<?xml version="1.0" encoding="UTF-8"?>\n'
+      '<kml xmlns="http://www.opengis.net/kml/2.2">\n')
+     
+
+					      if(pony != '0'):
+					         kml = kml + (
+      ' <Placemark>\n'
+      '  <name>Z=%s</name>\n') %(Zeta)
+
+					         kml = kml + (
+      '	<Snippet maxLines="0"></Snippet>\n'
+      '  <description>\n')      
+
+					         qrCodeUrl = ("http://qrcode.kaywa.com/img.php?s=8&amp;d=%.14f,%.14f,%.2f") %(lat,lon,Zeta)
+					         
+					         descript  = ('<html>lat  long  H<br><br>%.14f,%.14f,%.2f<br><br><table border=1 style="border-collapse:collapse; border-color:#000000;"cellpadding=0 cellspacing=0  width=250 style="FONT-SIZE: 11px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;"><tr><td bgcolor="#E3E1CA" align="right"><font COLOR="#FF0000"><b>CODE</b></font></td><td bgcolor="#E4E6CA"> <font COLOR="#008000">')  %(lat,lon,Zeta)
+					         qrCodeImg = ('<img alt="" src="%s" /></html>') %(qrCodeUrl)
+
+					         description = descript + qrCodeImg
+
+					         kml = kml + ('<![CDATA[%s')  %(description)
+					         
+					         kml = kml + (']]></description>\n')					            
+
+					         kml = kml + ('  <Style>\n'
+      '   <Icon>\n'
+      '  	<href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png</href>\n'
+      '   </Icon>\n' 
+      '  </Style>\n')
+
+					         kml = kml + (                        
+      '  <Point>\n'
+      '    <coordinates>%.14f,%.14f</coordinates>\n'
+      '  </Point>\n'
+      ' </Placemark>\n') %( lon, lat)
+
+                                 
+                          # Tag close KML ----
+#					      kml = kml + ('</kml>')
+      
+
+
+					      canvas = self.iface.mapCanvas()
+					      mapRenderer = canvas.mapRenderer()
+					      srs = mapRenderer.destinationCrs()
+				
+					      crsSrc = QgsCoordinateReferenceSystem(4326)
+					      crsDest = QgsCoordinateReferenceSystem(srs) 
+					      xform = QgsCoordinateTransform(crsSrc, crsDest)
+					      
+   
+					      GEraggio = (lookatRange - Zeta) / 2.
+                
+					      raggio = GEraggio
+                                 
+                
+                # Calculate QgisViewBox from 3D geoCoords
+                                 					      
+#					      print ("raggio = %f") %(raggio)
+                
+					      ilMetroGeo = 0.000011922282515       
+
+					      raggioGeo = raggio * ilMetroGeo
+
+					      x1Geo = lon - float(raggioGeo)
+					      y1Geo = lat - float(raggioGeo)             
+					      x2Geo = lon + float(raggioGeo)
+					      y2Geo = lat + float(raggioGeo)
+
+					      pt1 = xform.transform(QgsPoint(x1Geo, y1Geo))
+					      pt2 = xform.transform(QgsPoint(x2Geo, y2Geo))
+
+					      x1 = pt1.x()
+					      y1 = pt1.y()             
+					      x2 = pt2.x()
+					      y2 = pt2.y()               
+
+
+					      box = QgsRectangle(x1, y1, x2, y2)
+
+                                 
+					      canvas = self.iface.mapCanvas()
+                              
+					      canvas.setExtent(box)
+					      canvas.refresh()
+					      
+
+					      if(pony == '2'):					         
+					         QGEarth_addPoint(self)
+
+					             
+#					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
+
+#					      kml_2 = GDX_Publisher2(self)
+#					      kml = kml + kml_2
+					      
+					      kml = kml + ('</kml>')
+					      
+					      return kml					   
+					   					   
+
+
+					   def render_POST(self, request):
+					      print request.__dict__
+					      newdata = request.content.getvalue()
+					      print newdata, type(newdata)
+#					      QtGui.QMessageBox.information(self.iface.mainWindow(), "GEarthViewServer", u"recieved something.\n{}".format(newdata))
+
+					      if newdata['bbox']:
+					         self.iface.mapCanvas().setExtent(QgsRectangle(newdata['bbox']['xmin'], newdata['bbox']['ymin'], newdata['bbox']['xmax'], newdata['bbox']['ymax']))
+					      else:
+					         self.iface.mapCanvas().zoomToFullExtent()
+               
+					      return ''
+
+					root = Resource()
+					root.putChild("form", FormPage(self.iface, self.plugin_dir))
+
+					reactor.listenTCP(5558, server.Site(root))
+					reactor.run()
+
+
+
+#------------------------------------------------------------------------------
 # Add the current GEarth point in QGis current drawing function ------------------------------------------
 def QGEarth_addPoint(self):
 
@@ -1442,242 +1680,8 @@ class gearthview:
 
 # ----------------------------------------------------
     def startQrCoding(self):
- 
-				global serverStarted
+				startGeoDrink_Server(self) 
 
-				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"        
-				port = 5558
-
-				from twisted.web.resource import Resource        
-
-#				from twisted.web.twcgi import CGIScript
-        
-#				resource = CGIScript(webServerDir) 
-        
-				if platform.system() == "Windows":            
-					os.startfile(webServerDir + 'QGIS_link.kmz')
-						
-				if platform.system() == "Darwin":			
-					os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
-						
-				if platform.system() == "Linux":            
-					os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
-					
-					
-        
-				if ( serverStarted == 0) :
-
-					serverStarted = 1
-					
-					print ("Start GDX_Server Start --------!!!\n")
-
-# ---------------------------------------------
-					class FormPage(Resource):
-					   def __init__(self, iface, pluginDir):
-					      self.iface = iface
-					      self.pluginDir = pluginDir
-
-               
-					   def render_GET(self, request):
-
-					      global lat,lon
-					      global Zeta
-					      global description
-
-#------					      newdata = request.content.getvalue()
-#					      print request
-
-#<GET /form?BBOX=16.3013171267662,38.63325421913416,16.62443680433362,38.86443091553171 HTTP/1.1>
-#<GET /form?p=1&BBOX=-0.02411607307235109,-0.08678435516867355,0.149613182683106,0.06773426441872454 HTTP/1.1>
-#<GET /form?p=0&bboxWest=12.13495518195707&%0A%09%09%09&bboxSouth=42.72418498839377&%0A%09%09%09&bboxEast=12.13932970664519&%0A%09%09%09&bboxNorth=42.72713741547008&%09%0A%09%09%09&lookatTerrainLon=12.13714248521776&%0A%09%09%09&lookatTerrainLat=42.7256612227012&%0A%09%09%09&lookatTerrainAlt=112.88& HTTP/1.1>
-#<GET /form?p=0&BBOX=12.1356167437372,42.7264889613262,12.13701876665762,42.72743519322518&LookAt=12.13631776054357,42.72696207941286,205.39&LookatHeading=-0.002&LookatTilt=0&LookatTerrain=12.13631776055484,42.72696207945101,117.08&terrain=1 HTTP/1.1>
-#<GET /form?p=0&BBOX=12.13560526927239,42.72643977188249,12.13703061697471,42.72740174642745&LookatTerrain=12.13631794864158,42.72692076136277,116.9&terrain=1 HTTP/1.1>
-#<GET /form?p=1&BBOX=10.20045469843596,43.66302191930933,10.66672168693798,43.8667284090175&LookatTerrain=10.43397243010223,43.76510664670415,13.83&terrain=1&CAMERA=10.43397248408143,43.76510665598479,29287.22,0,-0.556&VIEW=60,38.141,1306,782 HTTP/1.1>
-
-#<viewFormat>
-#            BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth];
-#            LookatTerrain=[lookatTerrainLon],[lookatTerrainLat],[lookatTerrainAlt];
-#            terrain=[terrainEnabled];
-#            CAMERA=[lookatLon],[lookatLat],[lookatRange],[lookatTilt],[lookatHeading];
-#            VIEW=[horizFov],[vertFov],[horizPixels],[vertPixels]
-#</viewFormat>
-
-					      stringa = str(request)
-					      stringa = stringa.replace('<GET /form?','')                           
-					      stringa = stringa.replace(' HTTP/1.1>','')
-					      params = stringa.split('&')
-
-					      param0 = params[0].replace('p=','')
-					      pony  = param0
-
-					      param1 = params[1].replace('BBOX=','')
-
-					      bbox = param1.split(',')
-
-					      param2 = params[2].replace('LookatTerrain=','')
-					      LookatTerrain = param2.split(',')
-
-					      param3 = params[3].replace('terrain=','')
-					      param4 = params[4].replace('CAMERA=','')
-					      param5 = params[5].replace('VIEW=','')
-
-					      CAMERA = param4.split(',')
-
-					      lookatLon = float(CAMERA[0])
-					      lookatLat = float(CAMERA[1])
-					      lookatRange = float(CAMERA[2])
-					      lookatTilt = float(CAMERA[3])
-					      lookatHeading = float(CAMERA[4])
-					      
-#					      print("lookatLon %f")  %(lookatLon)
-#					      print("lookatLat %f")  %(lookatLat)
-#					      print("lookatRange %f")  %(lookatRange)
-#					      print("lookatTilt %f")  %(lookatTilt)
-#					      print("lookatHeading %f")  %(lookatHeading)                                                
-
-					      west  = float(bbox[0])
-					      south = float(bbox[1])
-					      east  = float(bbox[2])
-					      north = float(bbox[3])
-
-					      lon = float(LookatTerrain[0])
-					      lat = float(LookatTerrain[1])
-					      Zeta = float(LookatTerrain[2])
-     
-#					      print ("Zeta = %f") %(Zeta)
-
-					      msg = ("LonLatH = %s, %s    elev = %s m      alt =  %s m") %(lon,lat,Zeta, lookatRange)
-					      self.iface.mainWindow().statusBar().showMessage(msg)
-
-#					      lon = ((east - west) / 2) + west
-#					      lat = ((north - south) / 2) + south
-
-					      kml = ( 
-
-      '<?xml version="1.0" encoding="UTF-8"?>\n'
-      '<kml xmlns="http://www.opengis.net/kml/2.2">\n')
-     
-
-					      if(pony != '0'):
-					         kml = kml + (
-      ' <Placemark>\n'
-      '  <name>Z=%s</name>\n') %(Zeta)
-
-					         kml = kml + (
-      '	<Snippet maxLines="0"></Snippet>\n'
-      '  <description>\n')      
-
-					         qrCodeUrl = ("http://qrcode.kaywa.com/img.php?s=8&amp;d=%.14f,%.14f,%.2f") %(lat,lon,Zeta)
-					         
-					         descript  = ('<html>lat  long  H<br><br>%.14f,%.14f,%.2f<br><br><table border=1 style="border-collapse:collapse; border-color:#000000;"cellpadding=0 cellspacing=0  width=250 style="FONT-SIZE: 11px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;"><tr><td bgcolor="#E3E1CA" align="right"><font COLOR="#FF0000"><b>CODE</b></font></td><td bgcolor="#E4E6CA"> <font COLOR="#008000">')  %(lat,lon,Zeta)
-					         qrCodeImg = ('<img alt="" src="%s" /></html>') %(qrCodeUrl)
-
-					         description = descript + qrCodeImg
-
-					         kml = kml + ('<![CDATA[%s')  %(description)
-					         
-					         kml = kml + (']]></description>\n')					            
-
-					         kml = kml + ('  <Style>\n'
-      '   <Icon>\n'
-      '  	<href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png</href>\n'
-      '   </Icon>\n' 
-      '  </Style>\n')
-
-					         kml = kml + (                        
-      '  <Point>\n'
-      '    <coordinates>%.14f,%.14f</coordinates>\n'
-      '  </Point>\n'
-      ' </Placemark>\n') %( lon, lat)
-
-                                 
-                          # Tag close KML ----
-#					      kml = kml + ('</kml>')
-      
-
-
-					      canvas = self.iface.mapCanvas()
-					      mapRenderer = canvas.mapRenderer()
-					      srs = mapRenderer.destinationCrs()
-				
-					      crsSrc = QgsCoordinateReferenceSystem(4326)
-					      crsDest = QgsCoordinateReferenceSystem(srs) 
-					      xform = QgsCoordinateTransform(crsSrc, crsDest)
-					      
-   
-					      GEraggio = (lookatRange - Zeta) / 2.
-                
-					      raggio = GEraggio
-                                 
-                
-                # Calculate QgisViewBox from 3D geoCoords
-                                 					      
-#					      print ("raggio = %f") %(raggio)
-                
-					      ilMetroGeo = 0.000011922282515       
-
-					      raggioGeo = raggio * ilMetroGeo
-
-					      x1Geo = lon - float(raggioGeo)
-					      y1Geo = lat - float(raggioGeo)             
-					      x2Geo = lon + float(raggioGeo)
-					      y2Geo = lat + float(raggioGeo)
-
-					      pt1 = xform.transform(QgsPoint(x1Geo, y1Geo))
-					      pt2 = xform.transform(QgsPoint(x2Geo, y2Geo))
-
-					      x1 = pt1.x()
-					      y1 = pt1.y()             
-					      x2 = pt2.x()
-					      y2 = pt2.y()               
-
-
-					      box = QgsRectangle(x1, y1, x2, y2)
-
-                                 
-					      canvas = self.iface.mapCanvas()
-                              
-					      canvas.setExtent(box)
-					      canvas.refresh()
-					      
-
-					      if(pony == '2'):					         
-					         QGEarth_addPoint(self)
-
-					             
-#					      print  'Content-Type: application/vnd.google-earth.kml+xml\n'
-
-#					      kml_2 = GDX_Publisher2(self)
-#					      kml = kml + kml_2
-					      
-					      kml = kml + ('</kml>')
-					      
-					      return kml					   
-					   					   
-
-
-					   def render_POST(self, request):
-					      print request.__dict__
-					      newdata = request.content.getvalue()
-					      print newdata, type(newdata)
-#					      QtGui.QMessageBox.information(self.iface.mainWindow(), "GEarthViewServer", u"recieved something.\n{}".format(newdata))
-
-					      if newdata['bbox']:
-					         self.iface.mapCanvas().setExtent(QgsRectangle(newdata['bbox']['xmin'], newdata['bbox']['ymin'], newdata['bbox']['xmax'], newdata['bbox']['ymax']))
-					      else:
-					         self.iface.mapCanvas().zoomToFullExtent()
-               
-					      return ''
-
-					root = Resource()
-					root.putChild("form", FormPage(self.iface, self.plugin_dir))
-
-					reactor.listenTCP(5558, server.Site(root))
-					reactor.run()
-# ---------------------------------------------
-
-
-				    
 				    
 
 #  ------- OLD CODE ------------------------------------------------------
@@ -1738,6 +1742,6 @@ class gearthview:
     # run method that performs all the real work
     def run(self):
 
-#        from twisted.web.resource import Resource
+        startGeoDrink_Server(self)
 
         GDX_Publisher(self)	
