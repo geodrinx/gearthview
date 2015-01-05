@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+  # -*- coding: utf-8 -*-
 """
 /***************************************************************************
  gearthview
@@ -442,44 +442,96 @@ def GDX_Publisher(self):
 
 				iface = qgis.utils.iface
 
-				mapRenderer = mapCanvas.mapRenderer()
-				mapRect = mapRenderer.extent()
-				width = mapRenderer.width()
-				height = mapRenderer.height()
-				srs = mapRenderer.destinationCrs()
+				if QGis.QGIS_VERSION_INT <= 120200: 
 
-				# create output image and initialize it
-				image = QImage(QSize(width, height), QImage.Format_ARGB32)
-#				image.fill(qRgb(255,255,255))
-				image.fill(0)
+				   mapRenderer = mapCanvas.mapRenderer()
+				   mapRect = mapRenderer.extent()
+				   width = mapRenderer.width()
+				   height = mapRenderer.height()
+				   srs = mapRenderer.destinationCrs()
+
+				   # create output image and initialize it
+				   image = QImage(QSize(width, height), QImage.Format_ARGB32)
+
+				   image.fill(0)
 				
-				#adjust map canvas (renderer) to the image size and render
-				imagePainter = QPainter(image)
+				   #adjust map canvas (renderer) to the image size and render
+				   imagePainter = QPainter(image)
 				
-				zoom = 1
-				target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
+				   zoom = 1
+				   target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
 				
-				mapRenderer.setOutputSize(QSize(width, height), target_dpi)
+				   mapRenderer.setOutputSize(QSize(width, height), target_dpi)
 			
-				mapRenderer.render(imagePainter)
-				imagePainter.end()
+				   mapRenderer.render(imagePainter)
+				   imagePainter.end()
 
-				xN = mapRect.xMinimum()
-				yN = mapRect.yMinimum()
+				   xN = mapRect.xMinimum()
+				   yN = mapRect.yMinimum()
 
-				nomePNG = ("QGisView_%lf_%lf_%s") % (xN, yN, adesso)
+				   nomePNG = ("QGisView_%lf_%lf_%s") % (xN, yN, adesso)
 				
-				input_file = out_folder + "/" + nomePNG + ".png"
+				   input_file = out_folder + "/" + nomePNG + ".png"
 				
-				#Save the image
-				image.save(input_file, "png")
+				   #Save the image
+				   image.save(input_file, "png")
+
+				else:   # ovvero  QGis.QGIS_VERSION_INT > 120200
+
+
+           
+				   mapRenderer = mapCanvas.mapRenderer()
+				   mapRect = mapRenderer.extent()
+				   width = mapRenderer.width()
+				   height = mapRenderer.height()
+				   srs = mapRenderer.destinationCrs()
+
+				   xN = mapRect.xMinimum()
+				   yN = mapRect.yMinimum()
+
+				   mapSettings = QgsMapSettings()
+				   mapSettings.setMapUnits(0)
+				   mapSettings.setExtent(mapRect)
+				   DPI = 300
+				   mapSettings.setOutputDpi(DPI)
+
+				   mapSettings.setOutputSize(QSize(width, height))
+
+				   lst = []
+				   layerTreeRoot = QgsProject.instance().layerTreeRoot()
+				   for id in layerTreeRoot.findLayerIds():
+				       node = layerTreeRoot.findLayer(id)
+				       lst.append(id)
+           
+				   mapSettings.setLayers(lst)
+           
+				   mapSettings.setFlags(QgsMapSettings.Antialiasing | QgsMapSettings.UseAdvancedEffects | QgsMapSettings.ForceVectorOutput | QgsMapSettings.DrawLabeling)
+				   image = QImage(QSize(width, height), QImage.Format_RGB32)
+
+				   image.fill(0)
+
+				   image.setDotsPerMeterX(DPI / 25.4 * 1000)
+				   image.setDotsPerMeterY(DPI / 25.4 * 1000)
+				   p = QPainter()
+				   p.begin(image)
+				   mapRenderer = QgsMapRendererCustomPainterJob(mapSettings, p)
+				   mapRenderer.start()
+				   mapRenderer.waitForFinished()
+				   p.end()
+
+				   nomePNG = ("QGisView_%lf_%lf_%s") % (xN, yN, adesso)
+				   input_file = out_folder + "/" + nomePNG + ".png"
+				
+				   #Save the image
+				   image.save(input_file, "png")
+
+
+				# EndIf     # QGis.QGIS_VERSION_INT > 120200
 
 				layer = mapCanvas.currentLayer()
 				crsSrc = srs  # QgsCoordinateReferenceSystem(layer.crs())   # prendere quello attuale
 				crsDest = QgsCoordinateReferenceSystem(4326)  # Wgs84LLH
 				xform = QgsCoordinateTransform(crsSrc, crsDest)
-
-#				print ("%s\n") %(crsSrc.proj4String())
 
 				x1 = mapRect.xMinimum()
 				y1 = mapRect.yMinimum()
@@ -942,9 +994,9 @@ def GDX_Publisher(self):
 				          print "MULTIPART !!!"
 				          elem = geom.asMultiPolygon()
 
-				          for polygon in elem:
-				             for ring in polygon:
-				                print ("Pezzo con %d vertici") %(len(ring))
+#				          for polygon in elem:
+#				             for ring in polygon:
+# 				                print ("Pezzo con %d vertici") %(len(ring))
 
                      
                             			        			        
@@ -1581,14 +1633,15 @@ class gearthview:
         self.PasteFromGEaction = QAction(QIcon(self.plugin_dir + "/iconP.png"),QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
         QObject.connect(self.PasteFromGEaction, SIGNAL("triggered()"), self.PasteFromGE)
 
+
+#        self.QRcodingAction= QAction(QIcon(self.plugin_dir + "/iconQR.png"), QCoreApplication.translate(u"&GEarthView", "GE_QRcoding"), self.iface.mainWindow())
+#        QObject.connect(self.QRcodingAction, SIGNAL("triggered()"), self.startQrCoding)
+
+#        self.QGEarthAction= QAction(QIcon(self.plugin_dir + "/iconQG.png"), QCoreApplication.translate(u"&GEarthView", "PointFromGE"), self.iface.mainWindow())
+#        QObject.connect(self.QGEarthAction, SIGNAL("triggered()"), self.QGEarth)        
+
         self.aboutAction= QAction(QIcon(self.plugin_dir + "/iconA.png"), QCoreApplication.translate(u"&GEarthView", "About"), self.iface.mainWindow())
         QObject.connect(self.aboutAction, SIGNAL("triggered()"), self.about)
-
-        self.QRcodingAction= QAction(QIcon(self.plugin_dir + "/iconQR.png"), QCoreApplication.translate(u"&GEarthView", "GE_QRcoding"), self.iface.mainWindow())
-        QObject.connect(self.QRcodingAction, SIGNAL("triggered()"), self.startQrCoding)
-
-        self.QGEarthAction= QAction(QIcon(self.plugin_dir + "/iconQG.png"), QCoreApplication.translate(u"&GEarthView", "QGEarth"), self.iface.mainWindow())
-        QObject.connect(self.QGEarthAction, SIGNAL("triggered()"), self.QGEarth)        
 
         
         self.toolBar = self.iface.mainWindow().findChild(QObject, 'Geodrinx')
@@ -1599,9 +1652,11 @@ class gearthview:
         self.GECombo = QMenu(self.iface.mainWindow())
         self.GECombo.addAction(self.action)
         self.GECombo.addAction(self.PasteFromGEaction)
+
+#        self.GECombo.addAction(self.QRcodingAction)        
+#        self.GECombo.addAction(self.QGEarthAction)
+
         self.GECombo.addAction(self.aboutAction)
-        self.GECombo.addAction(self.QRcodingAction)        
-        self.GECombo.addAction(self.QGEarthAction)
         
         self.toolButton = QToolButton()
         self.toolButton.setMenu( self.GECombo )
@@ -1616,13 +1671,12 @@ class gearthview:
         self.iface.addPluginToWebMenu(u"&GEarthView", self.action)
         
         self.iface.addPluginToWebMenu(u"GEarthView", self.PasteFromGEaction)
-                 
-        self.iface.addPluginToWebMenu(u"&GEarthView", self.aboutAction)        
 
-        self.iface.addPluginToWebMenu(u"&GEarthView", self.QRcodingAction)
+#        self.iface.addPluginToWebMenu(u"&GEarthView", self.QRcodingAction)
 
-        self.iface.addPluginToWebMenu(u"&GEarthView", self.QGEarthAction)        
+#        self.iface.addPluginToWebMenu(u"&GEarthView", self.QGEarthAction)        
         
+        self.iface.addPluginToWebMenu(u"&GEarthView", self.aboutAction) 
 
 # ---------------------------------------------------------
     def unload(self):
@@ -1679,8 +1733,8 @@ class gearthview:
 
 
 # ----------------------------------------------------
-    def startQrCoding(self):
-				startGeoDrink_Server(self) 
+#    def startQrCoding(self):
+#				startGeoDrink_Server(self) 
 
 				    
 
@@ -1742,6 +1796,23 @@ class gearthview:
     # run method that performs all the real work
     def run(self):
 
-        startGeoDrink_Server(self)
+        webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"
 
-        GDX_Publisher(self)	
+        if ( serverStarted == 0) :
+           startGeoDrink_Server(self)
+        else:
+           if platform.system() == "Windows":            
+              os.startfile(webServerDir + 'QGIS_link.kmz')
+
+           if platform.system() == "Darwin":			
+              os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
+
+           if platform.system() == "Linux":            
+              os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
+
+           GDX_Publisher(self)
+
+        # EndIf
+
+
+	
