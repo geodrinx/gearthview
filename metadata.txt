@@ -12,8 +12,8 @@
 name=GEarthView
 description=GEarthView plugin displays QGis view and features with attributes (taken from the selected layer) into Google Earth -  tested on Windows, MacOSX and some Ubuntu Linux... (of course, GoogleEarth need to be installed, before ! If not, this plugin is completely unuseful  :)
 category=Plugins
-version=2.0.beta9
-experimental=True
+version=2.0.1
+experimental=False
 qgisMinimumVersion=2.0
 qgisMaximumVersion=2.99
 author=geodrinx

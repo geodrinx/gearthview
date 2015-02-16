@@ -1,4 +1,4 @@
-  # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  gearthview
@@ -365,13 +365,18 @@ def QGEarth_addPoint(self):
 #				    print ("description = <%s>") %(description)				    
 
 				    feature.initAttributes(5)
+
+				    adesso = str(datetime.datetime.now())
+				    adesso = adesso.replace(" ","_")
+				    adesso = adesso.replace(":","_")
+				    adesso = adesso.replace(".","_")  
 				    
-				    res = provider.addAttributes( [ QgsField("name",  QVariant.String), QgsField("description", QVariant.String), QgsField("lat",  QVariant.String), QgsField("lon",  QVariant.String), QgsField("Height",  QVariant.String)] )
+				    res = provider.addAttributes( [ QgsField("name",  QVariant.String), QgsField("description", QVariant.String), QgsField("DateTime",  QVariant.String),QgsField("lat",  QVariant.String), QgsField("lon",  QVariant.String), QgsField("Height",  QVariant.String)] )
 
 				    print feature.id()
 				    name = ("%s,%s,%s") %(lat, lon, Zeta)
 
-				    values = [(name), (description), lat, lon, Zeta]                  
+				    values = [(name), (description), adesso, lat, lon, Zeta]                  
 
 				    feature.setAttributes(values) 
 
@@ -1630,7 +1635,7 @@ class gearthview:
         QObject.connect(self.action, SIGNAL("triggered()"), self.run)
         # connect the action to the run method
 
-        self.PasteFromGEaction = QAction(QIcon(self.plugin_dir + "/iconP.png"),QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
+        self.PasteFromGEaction = QAction(QIcon(self.plugin_dir + "/iconQG.png"),QCoreApplication.translate(u"GEarthView", "PasteFromGE"), self.iface.mainWindow())
         QObject.connect(self.PasteFromGEaction, SIGNAL("triggered()"), self.PasteFromGE)
 
 
