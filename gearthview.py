@@ -279,6 +279,11 @@ def startGeoDrink_Server(self):
 					      canvas = self.iface.mapCanvas()
                               
 					      canvas.setExtent(box)
+
+					      if QGis.QGIS_VERSION_INT >= 20801:                
+					        canvas.setRotation(-lookatHeading)
+
+
 					      canvas.refresh()
 					      
 
