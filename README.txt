@@ -1,5 +1,5 @@
 --------------------------
-GEarthView 2.0 version :
+GEarthView 2.0.4 version :
 --------------------------
 
 New 1:   It moves the QGIS window according with GoogleEarth view
@@ -9,11 +9,11 @@ New 4:   It puts the GoogleEarth view center points in QGIS
 
 Install the following python libraries: 
 
-twisted\            Twisted-13.0.0-py2.7-win32   
-                 ( https  pypi.python.org/pypi/Twisted/13.0.0  )
+twisted\               
+                 ( https  pypi.python.org/pypi/Twisted/  )
                    
-zope\               zope.interface-3.6.0-py2.7-win32   
-                 ( https pypi.python.org/pypi/zope.interface/3.6.0 )
+zope\                  
+                 ( https pypi.python.org/pypi/zope.interface/ )
 
 
 (totally 33 mega)
@@ -21,7 +21,7 @@ zope\               zope.interface-3.6.0-py2.7-win32
 
 in the following directory (depending to QGIS version) :
 
-QGIS Valmiera\apps\Python27\Lib\site-packages\
+QGIS VERSION\apps\Python27\Lib\site-packages\
 
 
 
