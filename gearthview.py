@@ -660,6 +660,9 @@ def GDX_Publisher(self):
 				kml.write('	     	</StyleMap>\n')
 				
 				
+				rotazio = 0.0
+				if QGis.QGIS_VERSION_INT >= 20801:                
+				   rotazio = -(mapCanvas.rotation())
 				
 				
 				kml.write('      <Folder>\n')
@@ -674,7 +677,10 @@ def GDX_Publisher(self):
 				stringazza = ("    		   <latitude>%lf</latitude>\n") %(yc)
 				kml.write(stringazza)				
 				kml.write('    		   <altitude>0</altitude>\n')
-				kml.write('    		   <heading>0.00</heading>\n')
+
+				stringazza = ("    		   <heading>%lf</heading>\n") %(rotazio)
+				kml.write(stringazza)
+        
 				kml.write('    		   <tilt>0</tilt>\n')
 				stringazza = ("    		   <range>%lf</range>\n") %(dx)
 				kml.write(stringazza)				
