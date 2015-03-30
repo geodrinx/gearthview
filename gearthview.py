@@ -86,7 +86,7 @@ def startGeoDrink_Server(self):
  
 				global serverStarted
 
-				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"        
+				webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/_WebServer/"        
 				port = 5558
 
 				from twisted.web.resource import Resource        
@@ -1726,26 +1726,61 @@ class gearthview:
            
         copyText = QApplication.clipboard().text()
 
-#        print("CLIPBOARD: %s\n") %(copyText)
+        tempdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/python/plugins/gearthview/temp"
 
-        tempdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "python/plugins/gearthview/temp"
-        
-#        salvalo2 = open(tempdir + "/doc2.kml",'w')
-        salvalo2 = codecs.open(tempdir + "/doc2.kml", 'w', encoding='utf-8')
-        salvalo2.write (copyText)
+#<Point>         GEKml_Points.kml
+#<LineString>    GEKml_Lines.kml
+#<Polygon>       GEKml_Polygons.kml
 
-        salvalo2.close()                
 
-        vlayer = QgsVectorLayer(tempdir + "/doc2.kml", "GEKml", "ogr")
+        # Tolgo i livelli precedenti
+#        QgsMapLayerRegistry.instance().removeMapLayer("GEKml_Points")        
+#        QgsMapLayerRegistry.instance().removeMapLayer("GEKml_Lines")        
+#        QgsMapLayerRegistry.instance().removeMapLayer("GEKml_Polygons")
 
-        trovato = 0
         for iLayer in range(mapCanvas.layerCount()):
           layer = mapCanvas.layer(iLayer)
-          if layer.name() == "GEKml":
-            trovato = 1
+          if (layer.name() == "GEKml_Points") or (layer.name() == "GEKml_Lines") or (layer.name() == "GEKml_Polygons"):
+             QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+        
 
-        if (trovato == 0):        
-          QgsMapLayerRegistry.instance().addMapLayer(vlayer)   
+        GEKml_Points   = copyText.find("<Point>")
+        GEKml_Lines    = copyText.find("<LineString>")
+        GEKml_Polygons = copyText.find("<Polygon>")        
+
+
+        if (GEKml_Polygons > 0):        
+
+           salvalo2 = codecs.open(tempdir + "/GEKml_Polygons.kml", 'w', encoding='utf-8')
+           salvalo2.write (copyText)
+
+           salvalo2.close()                
+
+           vlayer = QgsVectorLayer(tempdir + "/GEKml_Polygons.kml", "GEKml_Polygons", "ogr")
+           QgsMapLayerRegistry.instance().addMapLayer(vlayer)
+
+
+        if (GEKml_Lines > 0):        
+
+           salvalo2 = codecs.open(tempdir + "/GEKml_Lines.kml", 'w', encoding='utf-8')
+           salvalo2.write (copyText)
+
+           salvalo2.close()                
+
+           vlayer = QgsVectorLayer(tempdir + "/GEKml_Lines.kml", "GEKml_Lines", "ogr")
+           QgsMapLayerRegistry.instance().addMapLayer(vlayer)
+
+
+        if (GEKml_Points > 0):        
+
+           salvalo2 = codecs.open(tempdir + "/GEKml_Points.kml", 'w', encoding='utf-8')
+           salvalo2.write (copyText)
+
+           salvalo2.close()                
+
+           vlayer = QgsVectorLayer(tempdir + "/GEKml_Points.kml", "GEKml_Points", "ogr")
+           QgsMapLayerRegistry.instance().addMapLayer(vlayer)   
+
 
 
 # ----------------------------------------------------
@@ -1812,7 +1847,7 @@ class gearthview:
     # run method that performs all the real work
     def run(self):
 
-        webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "python/plugins/gearthview/_WebServer/"
+        webServerDir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/_WebServer/"
 
         if ( serverStarted == 0) :
            startGeoDrink_Server(self)
