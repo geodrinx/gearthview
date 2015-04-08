@@ -95,16 +95,16 @@ def startGeoDrink_Server(self):
         
 #				resource = CGIScript(webServerDir) 
         
-				if platform.system() == "Windows":            
-					os.startfile(webServerDir + 'QGIS_link.kmz')
+#				if platform.system() == "Windows":            
+#					os.startfile(webServerDir + 'QGIS_link.kmz')
 						
-				if platform.system() == "Darwin":			
-					os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
+#				if platform.system() == "Darwin":			
+#					os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
 						
-				if platform.system() == "Linux":            
-					os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
+#				if platform.system() == "Linux":            
+#					os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
 					
-					
+				GDX_Publisher(self)					
         
 				if ( serverStarted == 0) :
 
@@ -596,7 +596,7 @@ def GDX_Publisher(self):
 				
 #				kml.write('    	 <description>http://map.project-osrm.org/?hl=it&loc=45.989486,12.778154&loc=45.985624,12.781076&z=16&center=45.984058,12.774417&alt=0&df=0&re=0&ly=-940622518</description>\n')
 				
-				kml.write('	     <open>0</open>\n')
+				kml.write('	     <open>1</open>\n')
 
 				kml.write('	     <Style id="sh_ylw-pushpin">\n')
 				kml.write('	     	<IconStyle>\n')
@@ -670,6 +670,18 @@ def GDX_Publisher(self):
 				xc = (x1 + x3) / 2.
 				yc = (y1 + y3) / 2.
 				dx = (x3 - x1) * 75000. #100000.
+
+
+				kml.write('    		<open>1</open>\n')    
+				kml.write('    		<NetworkLink>\n')
+				kml.write('    		   <name>QGIS_link</name>\n')
+				kml.write('    		   <visibility>1</visibility>\n')
+				kml.write('    		   <open>1</open>\n')
+				kml.write('    		   <Link>\n')
+				kml.write('    		      <href>../_WebServer/QGIS_link.kmz</href>\n')
+				kml.write('    		   </Link>\n')
+				kml.write('    		</NetworkLink>\n')        
+
         				
 				kml.write('    		<LookAt>\n')
 				stringazza = ("    		   <longitude>%lf</longitude>\n") %(xc)
@@ -1852,18 +1864,17 @@ class gearthview:
         if ( serverStarted == 0) :
            startGeoDrink_Server(self)
         else:
-           if platform.system() == "Windows":            
-              os.startfile(webServerDir + 'QGIS_link.kmz')
-
-           if platform.system() == "Darwin":			
-              os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
-
-           if platform.system() == "Linux":            
-              os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
-
+#           if platform.system() == "Windows":            
+#              os.startfile(webServerDir + 'QGIS_link.kmz')
+#
+#           if platform.system() == "Darwin":			
+#              os.system("open " + str(webServerDir + 'QGIS_link.kmz'))
+#
+#           if platform.system() == "Linux":            
+#              os.system("xdg-open " + str(webServerDir + 'QGIS_link.kmz'))
+#
            GDX_Publisher(self)
 
         # EndIf
-
 
 	
