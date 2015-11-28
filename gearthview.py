@@ -8,7 +8,7 @@
         begin                : 2013-06-22
         public version       : 2014-09-18
         
-        copyright            : (C) 2013 2014   by geodrinx
+        copyright            : (C) 2013 2014 2015  by geodrinx
         email                : geodrinx@gmail.com
         
         history              :
@@ -17,8 +17,11 @@
           
           menu and icons         Aldo Scorza
 
-          QgsRemoteControl       Matthias Ludwig     
-                                       
+          QgsRemoteControl       Matthias Ludwig 
+          
+          import ext-libs        Enrico Ferreguti    
+                                 Victor Olaya
+
  ***************************************************************************/
 
 /***************************************************************************
@@ -79,6 +82,8 @@ except:
 from twisted.internet import reactor
 from twisted.web import server    
 
+
+
 ###
 
 # ----------------------------------------------------
@@ -117,7 +122,8 @@ def startGeoDrink_Server(self):
 					   def __init__(self, iface, pluginDir):
 					      self.iface = iface
 					      self.pluginDir = pluginDir
-
+#					      site.addsitedir(os.path.abspath(os.path.dirname(pluginDir) + '/ext-libs'))
+#					      print os.path.abspath(os.path.dirname(pluginDir))
                
 					   def render_GET(self, request):
 
@@ -1085,6 +1091,10 @@ def GDX_Publisher(self):
 				kml.write ('</Document>\n')        
 				kml.write ('</kml>\n')
 				kml.close()
+
+
+
+#http://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/index.html?src=
 				
 				if platform.system() == "Windows":            
 						os.startfile(out_folder + '/doc.kml')
