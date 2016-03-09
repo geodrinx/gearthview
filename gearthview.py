@@ -82,7 +82,7 @@ except:
 from twisted.internet import reactor
 from twisted.web import server    
 
-
+from osgeo import gdal, ogr, osr
 
 ###
 
@@ -594,7 +594,9 @@ def GDX_Publisher(self):
 				kml.write('    <Document>\n')
 				kml.write('    	 <name>QGisView</name>\n')
 				kml.write('    	 <Snippet maxLines="0"></Snippet>\n') 
-				loc = ("    	 <description><![CDATA[http://map.project-osrm.org/?loc=%.9lf,%.9lf&ly=1784084387]]></description>\n") %(yc, xc)
+#				loc = ("    	 <description><![CDATA[http://map.project-osrm.org/?loc=%.9lf,%.9lf&ly=1784084387]]></description>\n") %(yc, xc)
+				loc = ("    	 <description><![CDATA[http://map.project-osrm.org/?z=16&center=%.9lf,%.9lf&loc=&loc=&hl=en&ly=&alt=&df=&srv=]]></description>\n") %(yc, xc)
+
 
 				kml.write(loc)
 #
@@ -865,34 +867,21 @@ def GDX_Publisher(self):
 				        kml.write ('</table></body></html>\n')
 				        kml.write (']]></description>\n')
 				        
-# DESCRIPTION DATA-----------
-
-# EXTENDED DATA -------------			
-#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-#				        kml.write (stringazza)                 	        
-#
-##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-##				        kml.write (stringazza)
-#
-## Prendo il contenuto dei campi -------------
-#				        fff = feat.fields()
-#				        num = fff.count()                
-#				        iii = -1
-#				        for f in layer.pendingFields(): 				        
-#				           iii = iii + 1
-#				           
-#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
-#
-#				           kml.write (stringazza)					           
-#                				        
-#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
-# EXTENDED DATA -------------
-				        
+#  VECCHIO METODO------------------------------------------------------------				        
 				        kml.write ('		<Point>\n')
 				        kml.write ('			<gx:drawOrder>1</gx:drawOrder>\n')
 				        stringazza =   ('			<coordinates>%.9lf,%.9lf</coordinates>\n') % (pt1.x(), pt1.y())
 				        kml.write (stringazza)                                  
 				        kml.write ('		</Point>\n')
+#  VECCHIO METODO------------------------------------------------------------
+
+#  NUOVO METODO------------------------------------------------------------
+#				        testo = geom.exportToWkt() 
+#				        geometra = ogr.CreateGeometryFromWkt(testo)
+#				        testoKML = geometra.ExportToKML()
+#				        kml.write (testoKML)
+#  NUOVO METODO------------------------------------------------------------
+
 				        kml.write ('	</Placemark>\n')
 
 
@@ -923,45 +912,42 @@ def GDX_Publisher(self):
 				        kml.write ('</table></body></html>\n')
 				        kml.write (']]></description>\n')
 				        
-# DESCRIPTION DATA-----------
+#  VECCHIO METODO------------------------------------------------------------               			        
+#				        kml.write ('		<LineString>\n')
+#				        kml.write ('			<tessellate>1</tessellate>\n')
+#				        kml.write ('			<coordinates>\n')
 				        
-# EXTENDED DATA -------------			
-#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-#				        kml.write (stringazza)                 	        
-#
-##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-##				        kml.write (stringazza)
-#
-## Prendo il contenuto dei campi -------------
-#				        fff = feat.fields()
-#				        num = fff.count()                
-#				        iii = -1
-#				        for f in layer.pendingFields(): 				        
-#				           iii = iii + 1
-#				           
-#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
-#
-#				           kml.write (stringazza)					           
-#                				        
-#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
-# EXTENDED DATA -------------
-                			        
-				        kml.write ('		<LineString>\n')
-				        kml.write ('			<tessellate>1</tessellate>\n')
-				        kml.write ('			<coordinates>\n')
-				        
-				        elem = geom.asPolyline()
+#				        elem = geom.asPolyline()
 				         
-				        for p1 in elem:
-				          x1,y1 = p1.x(),p1.y()
+#				        for p1 in elem:
+#				          x1,y1 = p1.x(),p1.y()
 
-				          pt1 = xform.transform(QgsPoint(x1, y1))
+#				          pt1 = xform.transform(QgsPoint(x1, y1))
                                                
-				          stringazza =   ('%.9lf,%.9lf \n') % (pt1.x(), pt1.y())
-				          kml.write (stringazza)
+#				          stringazza =   ('%.9lf,%.9lf \n') % (pt1.x(), pt1.y())
+#				          kml.write (stringazza)
 				          
-				        kml.write ('			</coordinates>\n')                   
-				        kml.write ('		</LineString>\n')
+#				        kml.write ('			</coordinates>\n')                   
+#				        kml.write ('		</LineString>\n')
+#  VECCHIO METODO------------------------------------------------------------
+
+#  NUOVO METODO------------------------------------------------------------
+				        wkt = layer.crs().toWkt()
+				        source = osr.SpatialReference()
+				        source.ImportFromWkt(wkt)
+
+				        target = osr.SpatialReference()
+				        target.ImportFromEPSG(4326)
+
+				        transform = osr.CoordinateTransformation(source, target)
+
+				        testo = geom.exportToWkt() 
+				        geometra = ogr.CreateGeometryFromWkt(testo)
+				        geometra.Transform(transform)                
+				        testoKML = geometra.ExportToKML()
+				        kml.write (testoKML)
+#  NUOVO METODO------------------------------------------------------------                
+                
 				        kml.write ('	</Placemark>\n')
 
 
@@ -992,89 +978,89 @@ def GDX_Publisher(self):
 				        kml.write ('</table></body></html>\n')
 				        kml.write (']]></description>\n')
 				        
-# DESCRIPTION DATA-----------				        
 				        
-# EXTENDED DATA -------------			
-#				        stringazza =   ('		<ExtendedData><SchemaData schemaUrl="#%s">\n') % (nomeLay)
-#				        kml.write (stringazza)                 	        
-#
-##				        stringazza = ('				<SimpleData name="id">%d</SimpleData>\n') %(nele)
-##				        kml.write (stringazza)
-#
-## Prendo il contenuto dei campi -------------
-#				        fff = feat.fields()
-#				        num = fff.count()                
-#				        iii = -1
-#				        for f in layer.pendingFields(): 				        
-#				           iii = iii + 1
-#				           
-#				           stringazza = ('				<SimpleData name="%s">%s</SimpleData>\n') %(f.name(),feat[iii])
-#
-#				           kml.write (stringazza)					           
-#                				        
-#				        kml.write ('		</SchemaData></ExtendedData>\n')				        
-# EXTENDED DATA -------------
-                				        
-				        kml.write ('		<Polygon>\n')
-				        kml.write ('			<tessellate>1</tessellate>\n')
-				        kml.write ('     <outerBoundaryIs>\n')
-				        kml.write ('        <LinearRing>\n')
-				        kml.write ('         <coordinates>\n')
+				        
+
+#  VECCHIO METODO------------------------------------------------------------                				        
+#				        kml.write ('		<Polygon>\n')
+#				        kml.write ('			<tessellate>1</tessellate>\n')
+#				        kml.write ('     <outerBoundaryIs>\n')
+#				        kml.write ('        <LinearRing>\n')
+#				        kml.write ('         <coordinates>\n')
               
-				        elem = geom.asPolygon()
+#				        elem = geom.asPolygon()
 
-# h ttp://qgis.spatialthoughts.com/2012/11/tip-count-number-of-vertices-in-layer.html				        
-				        if geom.isMultipart():
-				          print "MULTIPART !!!"
-				          elem = geom.asMultiPolygon()
+# http://qgis.spatialthoughts.com/2012/11/tip-count-number-of-vertices-in-layer.html				        
+#				        if geom.isMultipart():
+#				          print "MULTIPART !!!"
+#				          elem = geom.asMultiPolygon()
 
-#				          for polygon in elem:
-#				             for ring in polygon:
-# 				                print ("Pezzo con %d vertici") %(len(ring))
+##				          for polygon in elem:
+##				             for ring in polygon:
+## 				                print ("Pezzo con %d vertici") %(len(ring))
 
-                     
                             			        			        
-				        for iii in range (len(elem)):
+#				        for iii in range (len(elem)):
 
-				          if (iii == 1):				          
-				            kml.write ('         </coordinates>\n')
-				            kml.write ('         </LinearRing>\n')
-				            kml.write ('         </outerBoundaryIs>\n')
-				            kml.write ('         <innerBoundaryIs>\n')
-				            kml.write ('         <LinearRing>\n')
-				            kml.write ('         <coordinates>\n')
+#				          if (iii == 1):				          
+#				            kml.write ('         </coordinates>\n')
+#				            kml.write ('         </LinearRing>\n')
+#				            kml.write ('         </outerBoundaryIs>\n')
+#				            kml.write ('         <innerBoundaryIs>\n')
+#				            kml.write ('         <LinearRing>\n')
+#				            kml.write ('         <coordinates>\n')
 
-				          if (iii > 1):				          
-				            kml.write ('         </coordinates>\n')
-				            kml.write ('         </LinearRing>\n')
-				            kml.write ('         </innerBoundaryIs>\n')
-				            kml.write ('         <innerBoundaryIs>\n')
-				            kml.write ('         <LinearRing>\n')
-				            kml.write ('         <coordinates>\n')	
+#				          if (iii > 1):				          
+#				            kml.write ('         </coordinates>\n')
+#				            kml.write ('         </LinearRing>\n')
+#				            kml.write ('         </innerBoundaryIs>\n')
+#				            kml.write ('         <innerBoundaryIs>\n')
+#				            kml.write ('         <LinearRing>\n')
+#				            kml.write ('         <coordinates>\n')	
 				        
-				          for jjj in range (len(elem[iii])):
+#				          for jjj in range (len(elem[iii])):
 				                         
-				            x1,y1 = elem[iii][jjj][0], elem[iii][jjj][1]
+#				            x1,y1 = elem[iii][jjj][0], elem[iii][jjj][1]
 
-				            if geom.isMultipart():
-				               pt1 = xform.transform(x1)
-				            else:				            
-				               pt1 = xform.transform(QgsPoint(x1, y1))
+#				            if geom.isMultipart():
+#				               pt1 = xform.transform(x1)
+#				            else:				            
+#				               pt1 = xform.transform(QgsPoint(x1, y1))
                           
-				            stringazza =   ('%.9lf,%.9lf,0 \n') % (pt1.x(), pt1.y())
-				            kml.write (stringazza)
+#				            stringazza =   ('%.9lf,%.9lf,0 \n') % (pt1.x(), pt1.y())
+#				            kml.write (stringazza)
 
-				        if (iii == 0):
-				           kml.write ('         </coordinates>\n')
-				           kml.write ('        </LinearRing>\n')
-				           kml.write ('     </outerBoundaryIs>\n')
-				           kml.write ('   </Polygon>\n')
+#				        if (iii == 0):
+#				           kml.write ('         </coordinates>\n')
+#				           kml.write ('        </LinearRing>\n')
+#				           kml.write ('     </outerBoundaryIs>\n')
+#				           kml.write ('   </Polygon>\n')
 
-				        if (iii > 0):
-				           kml.write ('         </coordinates>\n')
-				           kml.write ('        </LinearRing>\n')
-				           kml.write ('     </innerBoundaryIs>\n')
-				           kml.write ('   </Polygon>\n')	
+#				        if (iii > 0):
+#				           kml.write ('         </coordinates>\n')
+#				           kml.write ('        </LinearRing>\n')
+#				           kml.write ('     </innerBoundaryIs>\n')
+#				           kml.write ('   </Polygon>\n')	
+#  VECCHIO METODO------(chi lascia la vecchia strada...)-------------------
+
+
+#  NUOVO METODO------------------------------------------------------------
+				        wkt = layer.crs().toWkt()
+				        source = osr.SpatialReference()
+				        source.ImportFromWkt(wkt)
+
+				        target = osr.SpatialReference()
+				        target.ImportFromEPSG(4326)
+
+				        transform = osr.CoordinateTransformation(source, target)
+
+				        testo = geom.exportToWkt() 
+				        geometra = ogr.CreateGeometryFromWkt(testo)
+				        geometra.Transform(transform)                
+				        testoKML = geometra.ExportToKML()
+				        kml.write (testoKML)
+#  NUOVO METODO------------------------------------------------------------ 
+
                   				        
 				        kml.write ('	</Placemark>\n')
 				        
