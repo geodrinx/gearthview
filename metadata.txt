@@ -10,7 +10,9 @@
 
 [general]
 name=GEarthView
-description=GEarthView plugin displays QGis view and features with attributes (selected layer) into Google Earth ( also PRO ).  Tested on Windows, MacOSX and some Ubuntu Linux... - GoogleEarth needs to be installed -  Zope and Twisted  python libraries needed.
+description=GEarthView plugin displays QGis view and features with attributes (selected layer) into Google Earth ( also PRO ).  Tested on Windows, MacOSX and some Ubuntu Linux... - GoogleEarth needs to be installed.
+about=GEarthView plugin for QuantumGIS 
+    .
 category=Plugins
 version=3.0.1
 experimental=False
