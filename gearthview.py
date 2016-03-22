@@ -86,6 +86,72 @@ from osgeo import gdal, ogr, osr
 
 ###
 
+#----------------------------------------------------------------------------
+def P3dPoints_Write(self, adesso):	
+        
+				iface = qgis.utils.iface
+
+				layer = iface.mapCanvas().currentLayer()
+
+				if(layer == None):
+				  return(-1)
+
+				nomeLayer = str(layer.name())
+				filePath = str(layer.source())
+				direct = os.path.dirname(filePath)
+				out_folder = direct + '/_3dPointsExport'
+				
+				if not os.path.exists(out_folder):
+				   os.mkdir( out_folder )
+
+                             
+				nomeGML = ("/GEKml_3dPoints.csv")         				
+
+
+        #  Apro il file WKT in scrittura
+        
+				kml=open(out_folder + nomeGML, 'w')
+
+				kml.write ("X,Y,Z\n")
+				# kml.write ("X,Y,Z,ID\n")
+
+				layer = self.iface.mapCanvas().currentLayer()
+				
+				if layer:
+				  if layer.type() == layer.VectorLayer:				
+				    
+				    name = layer.source();
+				    nomeLayer = layer.name()
+				    nomeLay   = nomeLayer.replace(" ","_")
+
+				    num = 0 				                				    				    
+				    iter = layer.getFeatures()            				    
+				    for feat in iter:
+
+				      num = num + 1 				                  				      
+				      # fetch geometry
+				      geom = feat.geometry()
+				      
+				      testoWKT = geom.exportToWkt() + "\n"
+
+#				      print testoWKT
+
+				      testoWKT = testoWKT.replace("LineStringZ (", "")
+				      testoWKT = testoWKT.replace("PolygonZ ((", "")              
+				      testoWKT = testoWKT.replace(", ", "\n")
+
+				      testoWKT = testoWKT.replace("))", "")
+				      testoWKT = testoWKT.replace(")", "")
+				      testoWKT = testoWKT.replace(" ", ",")
+
+
+				      kml.write (testoWKT)
+				        				        
+				kml.close()
+				
+				return(0)
+
+
 # ----------------------------------------------------
 def startGeoDrink_Server(self):
  
@@ -942,6 +1008,10 @@ def GDX_Publisher(self):
 				        transform = osr.CoordinateTransformation(source, target)
 
 				        testo = geom.exportToWkt() 
+#				        print testo
+				        testo = testo.replace("LineStringZ (", "LineString (")
+				        testo = testo.replace(" 0,", ",")
+				        testo = testo.replace(" 0)", ")")                
 				        geometra = ogr.CreateGeometryFromWkt(testo)
 				        geometra.Transform(transform)                
 				        testoKML = geometra.ExportToKML()
@@ -1055,6 +1125,10 @@ def GDX_Publisher(self):
 				        transform = osr.CoordinateTransformation(source, target)
 
 				        testo = geom.exportToWkt() 
+#				        print testo
+				        testo = testo.replace("PolygonZ (", "Polygon (")
+				        testo = testo.replace(" 0,", ",")
+				        testo = testo.replace(" 0)", ")")                                                
 				        geometra = ogr.CreateGeometryFromWkt(testo)
 				        geometra.Transform(transform)                
 				        testoKML = geometra.ExportToKML()
@@ -1789,6 +1863,52 @@ class gearthview:
            vlayer = QgsVectorLayer(tempdir + "/GEKml_Points.kml", "GEKml_Points", "ogr")
            QgsMapLayerRegistry.instance().addMapLayer(vlayer)   
 
+
+#  Dalla versione 2.14  QGIS permette di esportare anche la coordinata Z ---
+
+        if QGis.QGIS_VERSION_INT >= 21400:
+
+           if (GEKml_Polygons > 0):
+              ret = P3dPoints_Write(self, "GEKml_Polygons")
+
+           if (GEKml_Lines > 0):
+              ret = P3dPoints_Write(self, "GEKml_Lines")
+
+
+           nomecsv = tempdir + "/_3dPointsExport/GEKml_3dPoints.csv"
+           nomecsv.replace("\\", "/") 
+           uri = """file:///""" + nomecsv + """?"""
+           uri += """type=csv&"""
+           uri += """trimFields=no&"""
+           uri += """xField=X&"""
+           uri += """yField=Y&"""
+           uri += """spatialIndex=yes&"""
+           uri += """subsetIndex=no&"""
+           uri += """watchFile=no&"""
+           uri += """crs=epsg:4326"""
+
+           for iLayer in range(mapCanvas.layerCount()):
+               layer = mapCanvas.layer(iLayer)
+               if (layer): 
+                   if layer.name() == "GEKml_3dPoints":
+                     QgsMapLayerRegistry.instance().removeMapLayer(layer.id())                  
+
+                       
+           vlayer = QgsVectorLayer(uri, "GEKml_3dPoints", "delimitedtext")
+
+           QgsMapLayerRegistry.instance().addMapLayer(vlayer)
+
+           nomeqml = tempdir + "/_3dPointsExport/GEKml_3dPoints.qml"            
+           nomeqml.replace("\\", "/")
+
+           result = vlayer.loadNamedStyle(nomeqml)            
+
+# FINE  QGis.QGIS_VERSION_INT >= 21400 ----------------------
+
+                                             
+        vlayer.triggerRepaint()
+            
+        mapCanvas.refresh()   
 
 
 # ----------------------------------------------------
