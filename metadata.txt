@@ -14,7 +14,7 @@ description=GEarthView plugin displays QGis view and features with attributes (s
 about=GEarthView plugin for QuantumGIS 
     .
 category=Plugins
-version=3.0.3
+version=3.0.4
 experimental=False
 qgisMinimumVersion=2.0
 qgisMaximumVersion=2.99
