@@ -1,17 +1,14 @@
 --------------------------
-GEarthView 3.0.3 version :
+GEarthView 3.0.4 version :
 --------------------------
 
-News:   Now it includes the following python libraries: 
+News:   
 
-twisted\               
-zope\                  
+1)  PasteFromGE now permits to digitize in 3D from Google Earth PRO measure.
 
-So, there is no more needs to installing other than GEarthView plugin  :)
+2)  Publishes the Extrusion of buildings, using height field.
 
-New 2:  multipolygon supported
-
-New 3:  PasteFromGE displays 3D points
+3)  The published polygons and extrusions are hilited when mouse is inside them.
 
 
 
