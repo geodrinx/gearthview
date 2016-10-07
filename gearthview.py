@@ -230,8 +230,8 @@ def P3dPoints_Write(self, adesso):
 
 				if (adesso == "GEKml_Polygons"):
 				   memLay_Tin.updateFields()
-				   tempdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/temp"           
-				   nomeqml = tempdir + "/GEKml_Extrusions.qml"            
+				   tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"           
+				   nomeqml = tumpdir + "/GEKml_Extrusions.qml"            
 				   nomeqml.replace("\\", "/")
 
 				   result = memLay_Tin.loadNamedStyle(nomeqml)
@@ -243,13 +243,13 @@ def P3dPoints_Write(self, adesso):
 LISTA DEI FILE DA SALVARE con un suffisso DATA_time
 -----------------------------------------------------
 
-gearthview/temp/_3dPointsExport/GEKml_3dPoints.csv
-gearthview/temp/_3dPointsExport/GEKml_3dPoints.qml
+gearthview/tump/_3dPointsExport/GEKml_3dPoints.csv
+gearthview/tump/_3dPointsExport/GEKml_3dPoints.qml
 
-gearthview/temp/GEKml_Polygons.kml
+gearthview/tump/GEKml_Polygons.kml
 
          memory/GEKml_Extrusions.shp
-gearthview/temp/GEKml_Extrusions.qml
+gearthview/tump/GEKml_Extrusions.qml
 
 from PyQt4.QtGui import QMessageBox
 from qgis.core import QgsProject
@@ -706,7 +706,7 @@ def GDX_Publisher(self):
         
 				mapCanvas = self.iface.mapCanvas()
 				
-				tempdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/temp"
+				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"
 
 				adesso = str(datetime.datetime.now())
 				adesso = adesso.replace(" ","_")
@@ -725,16 +725,16 @@ def GDX_Publisher(self):
 
 # HERE IT DELETES THE OLD IMAGE ------------------------------------
 # (if you comment these, images still remain ...  :)
-				for filename in glob.glob(str(tempdir + '/*.png')) :
+				for filename in glob.glob(str(tumpdir + '/*.png')) :
 				   os.remove( str(filename) )
-				for filename in glob.glob(str(tempdir + '/*.pngw')) :
+				for filename in glob.glob(str(tumpdir + '/*.pngw')) :
 				   os.remove( str(filename) )            
 # ------------------------------------------------------------------				
 
     
 				tname = 'ZIPPA'
 
-				out_folder = tempdir
+				out_folder = tumpdir
 				
 				kml = codecs.open(out_folder + '/doc.kml', 'w', encoding='utf-8')
 #				kml=open(out_folder + '/doc.kml', 'w')
@@ -1460,7 +1460,7 @@ def GDX_Publisher2(self, kml):
 
 				mapCanvas = self.iface.mapCanvas()
 				
-				tempdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/temp"
+				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"
 
 				adesso = str(datetime.datetime.now())
 				adesso = adesso.replace(" ","_")
@@ -1475,16 +1475,16 @@ def GDX_Publisher2(self, kml):
 
 # HERE IT DELETES THE OLD IMAGE ------------------------------------
 # (if you comment these, images still remain ...  :)
-				for filename in glob.glob(str(tempdir + '/*.png')) :
+				for filename in glob.glob(str(tumpdir + '/*.png')) :
 				   os.remove( str(filename) )
-				for filename in glob.glob(str(tempdir + '/*.pngw')) :
+				for filename in glob.glob(str(tumpdir + '/*.pngw')) :
 				   os.remove( str(filename) )            
 # ------------------------------------------------------------------				
 
     
 				tname = 'ZIPPA'
 
-				out_folder = tempdir
+				out_folder = tumpdir
 				
 
 				iface = qgis.utils.iface
@@ -2099,7 +2099,7 @@ class gearthview:
 
 #        print copyText
 
-        tempdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/python/plugins/gearthview/temp"
+        tumpdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/python/plugins/gearthview/tump"
 
 #<Point>         GEKml_Points.kml
 #<LineString>    GEKml_Lines.kml
@@ -2124,34 +2124,34 @@ class gearthview:
 
         if (GEKml_Polygons > 0):        
 
-           salvalo2 = codecs.open(tempdir + "/GEKml_Polygons.kml", 'w', encoding='utf-8')
+           salvalo2 = codecs.open(tumpdir + "/GEKml_Polygons.kml", 'w', encoding='utf-8')
            salvalo2.write (copyText)
 
            salvalo2.close()                
 
-           vlayer = QgsVectorLayer(tempdir + "/GEKml_Polygons.kml", "GEKml_Polygons", "ogr")
+           vlayer = QgsVectorLayer(tumpdir + "/GEKml_Polygons.kml", "GEKml_Polygons", "ogr")
            QgsMapLayerRegistry.instance().addMapLayer(vlayer)
 
 
         if (GEKml_Lines > 0):        
 
-           salvalo2 = codecs.open(tempdir + "/GEKml_Lines.kml", 'w', encoding='utf-8')
+           salvalo2 = codecs.open(tumpdir + "/GEKml_Lines.kml", 'w', encoding='utf-8')
            salvalo2.write (copyText)
 
            salvalo2.close()                
 
-           vlayer = QgsVectorLayer(tempdir + "/GEKml_Lines.kml", "GEKml_Lines", "ogr")
+           vlayer = QgsVectorLayer(tumpdir + "/GEKml_Lines.kml", "GEKml_Lines", "ogr")
            QgsMapLayerRegistry.instance().addMapLayer(vlayer)
 
 
         if (GEKml_Points > 0):        
 
-           salvalo2 = codecs.open(tempdir + "/GEKml_Points.kml", 'w', encoding='utf-8')
+           salvalo2 = codecs.open(tumpdir + "/GEKml_Points.kml", 'w', encoding='utf-8')
            salvalo2.write (copyText)
 
            salvalo2.close()                
 
-           vlayer = QgsVectorLayer(tempdir + "/GEKml_Points.kml", "GEKml_Points", "ogr")
+           vlayer = QgsVectorLayer(tumpdir + "/GEKml_Points.kml", "GEKml_Points", "ogr")
            QgsMapLayerRegistry.instance().addMapLayer(vlayer)   
 
 
@@ -2172,7 +2172,7 @@ class gearthview:
               ret = P3dPoints_Write(self, "GEKml_Points")
               giaFatto = 1              
 
-           nomecsv = tempdir + "/_3dPointsExport/GEKml_3dPoints.csv"
+           nomecsv = tumpdir + "/_3dPointsExport/GEKml_3dPoints.csv"
            nomecsv.replace("\\", "/") 
            uri = """file:///""" + nomecsv + """?"""
            uri += """type=csv&"""
@@ -2196,7 +2196,7 @@ class gearthview:
 
            QgsMapLayerRegistry.instance().addMapLayer(vlayer)
 
-           nomeqml = tempdir + "/_3dPointsExport/GEKml_3dPoints.qml"            
+           nomeqml = tumpdir + "/_3dPointsExport/GEKml_3dPoints.qml"            
            nomeqml.replace("\\", "/")
 
            result = vlayer.loadNamedStyle(nomeqml)            
