@@ -1,8 +1,10 @@
 --------------------------
-GEarthView 3.0.4 version :
+GEarthView 3.0.5 version :
 --------------------------
 
 News:   
+
+0)  Re-Implements labels on the published image
 
 1)  PasteFromGE now permits to digitize in 3D from Google Earth PRO measure.
 
