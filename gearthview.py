@@ -230,7 +230,7 @@ def P3dPoints_Write(self, adesso):
 
 				if (adesso == "GEKml_Polygons"):
 				   memLay_Tin.updateFields()
-				   tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"           
+				   tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/_WebServer"           
 				   nomeqml = tumpdir + "/GEKml_Extrusions.qml"            
 				   nomeqml.replace("\\", "/")
 
@@ -243,13 +243,13 @@ def P3dPoints_Write(self, adesso):
 LISTA DEI FILE DA SALVARE con un suffisso DATA_time
 -----------------------------------------------------
 
-gearthview/tump/_3dPointsExport/GEKml_3dPoints.csv
-gearthview/tump/_3dPointsExport/GEKml_3dPoints.qml
+gearthview/_WebServer/_3dPointsExport/GEKml_3dPoints.csv
+gearthview/_WebServer/_3dPointsExport/GEKml_3dPoints.qml
 
-gearthview/tump/GEKml_Polygons.kml
+gearthview/_WebServer/GEKml_Polygons.kml
 
          memory/GEKml_Extrusions.shp
-gearthview/tump/GEKml_Extrusions.qml
+gearthview/_WebServer/GEKml_Extrusions.qml
 
 from PyQt4.QtGui import QMessageBox
 from qgis.core import QgsProject
@@ -706,7 +706,7 @@ def GDX_Publisher(self):
         
 				mapCanvas = self.iface.mapCanvas()
 				
-				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"
+				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/_WebServer"
 
 				adesso = str(datetime.datetime.now())
 				adesso = adesso.replace(" ","_")
@@ -750,21 +750,22 @@ def GDX_Publisher(self):
 				   height = mapRenderer.height()
 				   srs = mapRenderer.destinationCrs()
 
+#  OLD version ----------------------------------------------------------
 				   # create output image and initialize it
-				   image = QImage(QSize(width, height), QImage.Format_ARGB32)
-
-				   image.fill(0)
-				
+#				   image = QImage(QSize(width, height), QImage.Format_ARGB32)
+#				   image.fill(0)
 				   #adjust map canvas (renderer) to the image size and render
-				   imagePainter = QPainter(image)
-				
-				   zoom = 1
-				   target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
-				
-				   mapRenderer.setOutputSize(QSize(width, height), target_dpi)
-			
-				   mapRenderer.render(imagePainter)
-				   imagePainter.end()
+#				   imagePainter = QPainter(image)
+#				   zoom = 1
+#				   target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
+#				   mapRenderer.setOutputSize(QSize(width, height), target_dpi)			
+#				   mapRenderer.render(imagePainter)
+#				   imagePainter.end()
+#  OLD version ----------------------------------------------------------
+
+#  NEW version ----------------------------------------------------------
+				   image = QImage(QPixmap.grabWidget(self.iface.mapCanvas()))
+#  NEW version ----------------------------------------------------------
 
 				   xN = mapRect.xMinimum()
 				   yN = mapRect.yMinimum()
@@ -1006,7 +1007,8 @@ def GDX_Publisher(self):
 				kml.write('    		   <visibility>1</visibility>\n')
 				kml.write('    		   <open>1</open>\n')
 				kml.write('    		   <Link>\n')
-				kml.write('    		      <href>../_WebServer/QGIS_link.kmz</href>\n')
+#				kml.write('    		      <href>../_WebServer/QGIS_link.kmz</href>\n')
+				kml.write('    		      <href>QGIS_link.kmz</href>\n')        
 				kml.write('    		   </Link>\n')
 				kml.write('    		</NetworkLink>\n')        
 
@@ -1460,7 +1462,7 @@ def GDX_Publisher2(self, kml):
 
 				mapCanvas = self.iface.mapCanvas()
 				
-				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/tump"
+				tumpdir = unicode(QFileInfo(QgsApplication.qgisUserDbFilePath()).path()) + "/python/plugins/gearthview/_WebServer"
 
 				adesso = str(datetime.datetime.now())
 				adesso = adesso.replace(" ","_")
@@ -2099,7 +2101,7 @@ class gearthview:
 
 #        print copyText
 
-        tumpdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/python/plugins/gearthview/tump"
+        tumpdir = QFileInfo(QgsApplication.qgisUserDbFilePath()).path() + "/python/plugins/gearthview/_WebServer"
 
 #<Point>         GEKml_Points.kml
 #<LineString>    GEKml_Lines.kml
