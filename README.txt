@@ -1,5 +1,5 @@
 --------------------------
-GEarthView 3.0.5 version :
+GEarthView 3.0.5b version :
 --------------------------
 
 GEarthView is a plugin that publishes QGIS view into GoogleEarth globe, with
@@ -7,8 +7,6 @@ vector elements with alfanumeric info.
 
 
 News:   
-
-0)  Re-Implements labels on the published image
 
 1)  PasteFromGE now permits to digitize in 3D from Google Earth PRO measure.
 

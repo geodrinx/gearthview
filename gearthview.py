@@ -752,20 +752,20 @@ def GDX_Publisher(self):
 
 #  OLD version ----------------------------------------------------------
 				   # create output image and initialize it
-#				   image = QImage(QSize(width, height), QImage.Format_ARGB32)
-#				   image.fill(0)
+				   image = QImage(QSize(width, height), QImage.Format_ARGB32)
+				   image.fill(0)
 				   #adjust map canvas (renderer) to the image size and render
-#				   imagePainter = QPainter(image)
-#				   zoom = 1
-#				   target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
-#				   mapRenderer.setOutputSize(QSize(width, height), target_dpi)			
-#				   mapRenderer.render(imagePainter)
-#				   imagePainter.end()
+				   imagePainter = QPainter(image)
+				   zoom = 1
+				   target_dpi = int(round(zoom * mapRenderer.outputDpi()))				
+				   mapRenderer.setOutputSize(QSize(width, height), target_dpi)			
+				   mapRenderer.render(imagePainter)
+				   imagePainter.end()
 #  OLD version ----------------------------------------------------------
 
-#  NEW version ----------------------------------------------------------
-				   image = QImage(QPixmap.grabWidget(self.iface.mapCanvas()))
-#  NEW version ----------------------------------------------------------
+#  NEW version (not working) --------------------------------------------
+#				   image = QImage(QPixmap.grabWidget(self.iface.mapCanvas()))
+#  NEW version (not working) --------------------------------------------
 
 				   xN = mapRect.xMinimum()
 				   yN = mapRect.yMinimum()
