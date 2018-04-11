@@ -1,3 +1,8 @@
+DONATIONS:
+
+https://paypal.me/pools/c/83roK7pmAK
+
+
 --------------------------
 GEarthView 3.0.5b version :
 --------------------------
