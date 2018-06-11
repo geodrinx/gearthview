@@ -69,10 +69,11 @@ if QGis.QGIS_VERSION_INT < 10900:
 
 
 ### important
-import qtreactor.qt4reactor as qt4reactor
+from twisted.internet.error import ReactorAlreadyInstalledError
+import qtreactor.qt4reactor as reactor
 try:
-    qt4reactor.install()
-except qt4reactor.ReactorAlreadyInstalledError:
+    reactor.install()
+except ReactorAlreadyInstalledError:
     print "still installed, doing nothing"
 except AttributeError:
     pass
